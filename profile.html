@@ -1,340 +1,127 @@
-/**
- * MASTER JAVASCRIPT FILE
- * Handles Client Logic: Rooms, Auth, UI Updates
- */
-
-// --- 1. DATABASE HELPER ---
-const DB = {
-    get: (key) => JSON.parse(localStorage.getItem(key)) || [],
-    set: (key, val) => localStorage.setItem(key, JSON.stringify(val)),
-    getObj: (key) => JSON.parse(localStorage.getItem(key)) || {},
-};
-
-// --- 2. INITIALIZATION & SEEDING ---
-(function initData() {
-    // Seed Rooms if empty
-    if (!localStorage.getItem('pelagic_rooms')) {
-        const defaultRooms = [
-            { id: 'R1', name: 'Standard Room', price: 3500, type: 'overnight', desc: 'Cozy room for 2 pax with AC.', amenities: 'AC, Private Bath', image: '' },
-            { id: 'V1', name: 'Ocean Villa', price: 5000, type: 'overnight', desc: 'Villa with balcony and kitchen.', amenities: 'Kitchen, Balcony, AC', image: '' }
-        ];
-        DB.set('pelagic_rooms', defaultRooms);
-    }
-})();
-
-// --- 3. DOM EVENT LISTENERS ---
-document.addEventListener('DOMContentLoaded', () => {
-    updateNavState(); 
-    loadHeroBackground();
-
-    if (document.getElementById('rooms-list')) {
-        renderIndexRooms();
-    }
-
-    if (document.getElementById('auth-section')) {
-        checkAuthState();
-        setupTabs();
-        setupDateRestrictions();
-    }
-    
-    // Setup listener for the new homepage Logout button (error-free check)
-    document.getElementById('nav-logout-btn')?.addEventListener('click', () => {
-        sessionStorage.removeItem('pelagic_user');
-        // Redirect to homepage to refresh state
-        window.location.href = 'index.html'; 
-    });
-});
-
-// --- 4. UI & NAVIGATION LOGIC ---
-
-function updateNavState() {
-    const user = sessionStorage.getItem('pelagic_user');
-    const loginBtn = document.getElementById('nav-login-btn');
-    const bookBtn = document.getElementById('nav-book-btn');
-    const logoutBtn = document.getElementById('nav-logout-btn'); 
-
-    if (user) {
-        // Logged In: Hide Login, Show Logout, Change Book Button text
-        if (loginBtn) loginBtn.style.display = 'none';
-        if (logoutBtn) logoutBtn.style.display = 'inline-block';
-        if (bookBtn) {
-            bookBtn.textContent = "My Dashboard";
-            bookBtn.href = "profile.html";
-        }
-    } else {
-        // Logged Out: Show Login, Hide Logout, Reset Book Button text
-        if (loginBtn) loginBtn.style.display = 'inline-block';
-        if (logoutBtn) logoutBtn.style.display = 'none';
-        if (bookBtn) bookBtn.textContent = "Book Now";
-    }
-}
-
-function loadHeroBackground() {
-    const gallery = DB.getObj('pelagic_gallery');
-    const heroSection = document.getElementById('hero-section');
-    if (heroSection && gallery.bg) {
-        heroSection.style.backgroundImage = `url(${gallery.bg})`;
-    }
-}
-
-// --- 5. HOME PAGE: RENDER ROOMS ---
-function renderIndexRooms() {
-    const list = document.getElementById('rooms-list');
-    const rooms = DB.get('pelagic_rooms');
-    
-    list.innerHTML = ''; 
-
-    if (rooms.length === 0) {
-        list.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding:20px;">No rooms currently available.</p>';
-        return;
-    }
-
-    const placeholder = "https://via.placeholder.com/400x250?text=Room+Photo";
-
-    list.innerHTML = rooms.map(r => `
-        <div class="room-card">
-            <img src="${r.image && r.image.length > 100 ? r.image : placeholder}" alt="${r.name}">
-            <div class="card-body">
-                <h3>${r.name}</h3>
-                <p class="room-desc">${r.desc}</p>
-                <div class="room-amenities">${r.amenities ? r.amenities.split(',').map(a => `<span>${a.trim()}</span>`).join('') : ''}</div>
-                <div class="price-info">₱ ${Number(r.price).toLocaleString()}</div> 
-                <a href="profile.html?room=${r.id}" class="btn book-btn small-btn" style="float:right;">Book Now</a>
-            </div>
-        </div>
-    `).join('');
-}
-
-// --- 6. PROFILE PAGE: AUTH & DASHBOARD ---
-
-function checkAuthState() {
-    const user = sessionStorage.getItem('pelagic_user');
-    if (user) {
-        const uObj = JSON.parse(user);
-        document.getElementById('auth-section').classList.add('hidden');
-        document.getElementById('dashboard-section').classList.remove('hidden');
-        document.getElementById('user-welcome').textContent = `Welcome, ${uObj.name}!`;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pelagic Beach Resort | Client Access</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        :root{ --accent:#0b7db0; --accent-dark:#086b95; --muted:#666; --bg:#f9f9fb; --card:#fff; }
+        body{font-family:'Inter', sans-serif; margin:0; background:var(--bg); color:#222}
+        .container{max-width:800px; margin:40px auto; padding:20px; background:var(--card); border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.05);}
+        .hidden{display:none !important;}
         
-        loadBookingOptions(); 
-        loadMyBookings(uObj.email);
-        renderUserFeedbacks(); // Load feedbacks on login
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const roomID = urlParams.get('room');
-        if(roomID) {
-            const select = document.getElementById('book-room');
-            setTimeout(() => { select.value = roomID; select.dispatchEvent(new Event('change')); }, 100);
-        }
-    } else {
-        document.getElementById('auth-section').classList.remove('hidden');
-        document.getElementById('dashboard-section').classList.add('hidden');
-    }
-}
-
-document.getElementById('show-register')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    document.getElementById('login-form').classList.add('hidden');
-    document.getElementById('register-form').classList.remove('hidden');
-});
-document.getElementById('show-login')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    document.getElementById('register-form').classList.add('hidden');
-    document.getElementById('login-form').classList.remove('hidden');
-});
-
-document.getElementById('login-form-data')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const email = document.getElementById('login-email').value;
-    const pass = document.getElementById('login-pass').value;
-    const users = DB.get('pelagic_users');
-    
-    const validUser = users.find(u => u.email === email && u.pass === pass);
-
-    if (validUser) {
-        sessionStorage.setItem('pelagic_user', JSON.stringify(validUser));
-        checkAuthState();
-        updateNavState();
-    } else {
-        alert('Invalid email or password.');
-    }
-});
-
-document.getElementById('register-form-data')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const name = document.getElementById('reg-name').value;
-    const email = document.getElementById('reg-email').value;
-    const pass = document.getElementById('reg-pass').value;
-    
-    const users = DB.get('pelagic_users');
-    if (users.find(u => u.email === email)) return alert('Email already registered.');
-
-    users.push({ name, email, pass });
-    DB.set('pelagic_users', users);
-    alert('Account created successfully! Please log in.');
-    document.getElementById('show-login').click();
-});
-
-// This logout button is on profile.html, handled safely with optional chaining.
-document.getElementById('logout-btn')?.addEventListener('click', () => {
-    sessionStorage.removeItem('pelagic_user');
-    window.location.href = 'index.html'; 
-});
-
-// --- 7. BOOKING FORM LOGIC ---
-
-function setupDateRestrictions() {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    const today = now.toISOString().slice(0, 16);
-
-    const inInput = document.getElementById('book-in');
-    const outInput = document.getElementById('book-out');
-
-    if (inInput && outInput) {
-        inInput.min = today;
-        outInput.min = today;
+        input, select, textarea { width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin-bottom:15px; }
+        label { font-weight: 600; font-size: 0.9rem; display: block; margin-bottom: 5px; }
+        .btn-primary { width:100%; padding:12px; background:var(--accent); color:#fff; border:none; border-radius:6px; font-size:1.1rem; cursor:pointer; }
+        .btn-primary:hover{background:var(--accent-dark);}
         
-        inInput.addEventListener('change', () => {
-            outInput.min = inInput.value; 
-        });
-    }
-}
+        .nav-back { padding: 15px; text-align: center; background: #fff; border-bottom: 1px solid #eee; }
+        .nav-back a { text-decoration: none; color: var(--muted); font-weight: 600; }
 
-function loadBookingOptions() {
-    const rooms = DB.get('pelagic_rooms');
-    const select = document.getElementById('book-room');
-    
-    select.innerHTML = '<option value="">Select a Room...</option>' + 
-        rooms.map(r => `<option value="${r.id}" data-price="${r.price}">${r.name}</option>`).join('');
-    
-    select.addEventListener('change', () => {
-        const opt = select.options[select.selectedIndex];
-        const price = opt.getAttribute('data-price') || 0;
-        document.getElementById('total-price').textContent = `Total: ₱${Number(price).toLocaleString()}`;
-    });
-}
+        .tab-menu { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 10px; background: none; border: none; cursor: pointer; font-weight: 600; color: #888; border-bottom: 3px solid transparent; }
+        .tab-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
 
-const toBase64 = file => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
-});
+        .status-card { background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 8px; border-left: 5px solid #ccc; margin-bottom: 15px; }
+        .status-approved { border-left-color: #2ecc71; }
+        .status-declined { border-left-color: #e74c3c; }
+        .status-pending { border-left-color: #f1c40f; }
 
-document.getElementById('booking-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const user = JSON.parse(sessionStorage.getItem('pelagic_user'));
-    const roomSelect = document.getElementById('book-room');
-    const fileInput = document.getElementById('receipt-file');
-    
-    if (!roomSelect.value) return alert('Please select a room.');
-    if (fileInput.files.length === 0) return alert('Please upload proof of payment.');
+        .file-drop { border: 2px dashed #ccc; padding: 20px; text-align: center; cursor: pointer; border-radius: 8px; margin-bottom: 15px; }
+        .admin-link { text-align: center; margin-top: 20px; font-size: 0.85rem; }
+        .admin-link a { color: var(--muted); text-decoration: none; }
+    </style>
+</head>
+<body>
 
-    const receiptBase64 = await toBase64(fileInput.files[0]);
-    
-    const booking = {
-        id: 'BK' + Date.now().toString().slice(-6),
-        userId: user.email, 
-        guestName: user.name,
-        guestEmail: user.email,
-        roomID: roomSelect.value,
-        roomName: roomSelect.options[roomSelect.selectedIndex].text,
-        in: document.getElementById('book-in').value,
-        out: document.getElementById('book-out').value,
-        gcash: document.getElementById('gcash-name').value + ' (' + document.getElementById('gcash-no').value + ')',
-        total: document.getElementById('total-price').textContent,
-        receipt: receiptBase64,
-        status: 'pending',
-        dateSubmitted: new Date().toISOString()
-    };
+<div class="nav-back"><a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home Page</a></div>
 
-    const bookings = DB.get('pelagic_bookings');
-    bookings.push(booking);
-    DB.set('pelagic_bookings', bookings);
-
-    alert('Booking Submitted! Wait for Admin Approval.');
-    document.getElementById('booking-form').reset();
-    document.querySelector('.tab-btn[data-tab="tab-my-bookings"]').click(); 
-    loadMyBookings(user.email);
-});
-
-function loadMyBookings(email) {
-    const list = document.getElementById('bookings-list');
-    const bookings = DB.get('pelagic_bookings').filter(b => b.guestEmail === email);
-    
-    if (bookings.length === 0) {
-        list.innerHTML = '<p>No bookings found.</p>';
-        return;
-    }
-
-    list.innerHTML = bookings.map(b => `
-        <div class="status-card status-${b.status}">
-            <div style="display:flex; justify-content:space-between;">
-                <h4>${b.roomName}</h4>
-                <span style="text-transform:uppercase; font-weight:bold; font-size:0.9rem;">${b.status}</span>
-            </div>
-            <p style="margin:5px 0; font-size:0.9rem;">${new Date(b.in).toLocaleDateString()} - ${new Date(b.out).toLocaleDateString()}</p>
-            <p style="margin:0; font-weight:bold;">${b.total}</p>
+<div class="container">
+    <h1 style="text-align:center; margin-bottom: 30px;">Client Account Access</h1> <div id="auth-section">
+        <div id="login-form">
+            <h3>Login</h3>
+            <form id="login-form-data">
+                <label>Email</label><input type="email" id="login-email" required />
+                <label>Password</label><input type="password" id="login-pass" required />
+                <button type="submit" class="btn-primary">Login</button>
+            </form>
+            <p style="text-align:center; margin-top:15px;">No account? <a href="#" id="show-register">Register</a></p>
+            <div class="admin-link"><a href="admin.html">Admin Login</a></div>
         </div>
-    `).join('');
-}
 
-// --- 8. FEEDBACK LOGIC (FIXED) ---
-document.getElementById('feedback-form')?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const user = JSON.parse(sessionStorage.getItem('pelagic_user'));
-    
-    const rating = document.getElementById('fb-rating').value;
-    const msg = document.getElementById('fb-msg').value;
+        <div id="register-form" class="hidden">
+            <h3>Register</h3>
+            <form id="register-form-data">
+                <label>Full Name</label><input type="text" id="reg-name" required />
+                <label>Email</label><input type="email" id="reg-email" required />
+                <label>Password</label><input type="password" id="reg-pass" required />
+                <button type="submit" class="btn-primary">Register</button>
+            </form>
+            <p style="text-align:center; margin-top:15px;">Has account? <a href="#" id="show-login">Login</a></p>
+        </div>
+    </div>
 
-    const fb = {
-        id: Date.now(),
-        userId: user.email,
-        guestName: user.name,
-        guestEmail: user.email,
-        rating: rating,
-        msg: msg,
-        date: new Date().toLocaleDateString()
-    };
-    
-    // Use standard key 'pelagic_feedbacks'
-    const feeds = DB.get('pelagic_feedbacks');
-    feeds.push(fb);
-    DB.set('pelagic_feedbacks', feeds);
-    
-    alert('Feedback Sent!');
-    document.getElementById('feedback-form').reset();
-    renderUserFeedbacks();
-});
+    <div id="dashboard-section" class="hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 id="user-welcome">Welcome!</h2>
+            <button id="logout-btn" style="padding:5px 10px; background:#e74c3c; color:#fff; border:none; border-radius:4px; cursor:pointer;">Logout</button>
+        </div>
 
-function renderUserFeedbacks() {
-    const user = JSON.parse(sessionStorage.getItem('pelagic_user'));
-    const list = document.getElementById('my-feedbacks');
-    // Use standard key 'pelagic_feedbacks'
-    const feeds = DB.get('pelagic_feedbacks').filter(f => f.guestEmail === user.email);
-    
-    if(list) {
-        list.innerHTML = feeds.length ? feeds.map(f => `
-            <div class="status-card" style="border-left-color: #f39c12;">
-                <div style="display:flex; justify-content:space-between;">
-                    <strong>${f.rating}/5 Stars</strong>
-                    <small>${f.date}</small>
+        <div class="tab-menu">
+            <button class="tab-btn active" data-tab="tab-book">Book a Room</button>
+            <button class="tab-btn" data-tab="tab-my-bookings">My Bookings</button>
+            <button class="tab-btn" data-tab="tab-feedback">Feedback</button>
+        </div>
+
+        <div id="tab-book" class="tab-content">
+            <form id="booking-form">
+                <label>Select Room</label>
+                <select id="book-room" required><option value="">Loading rooms...</option></select>
+                
+                <div style="display:flex; gap:15px;">
+                    <div style="flex:1;"><label>Check-in</label><input type="datetime-local" id="book-in" required /></div>
+                    <div style="flex:1;"><label>Check-out</label><input type="datetime-local" id="book-out" required /></div>
                 </div>
-                <p style="margin-top:5px; font-style:italic;">"${f.msg}"</p>
-            </div>
-        `).join('') : '<p>You have not submitted any feedback yet.</p>';
-    }
-}
 
-// --- 9. TABS LOGIC ---
-function setupTabs() {
-    const tabs = document.querySelectorAll('.tab-btn');
-    tabs.forEach(t => {
-        t.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-            t.classList.add('active');
-            document.getElementById(t.dataset.tab).classList.remove('hidden');
-        });
-    });
-}
+                <label>Payment (GCash Transaction)</label>
+                <input type="text" id="gcash-name" placeholder="Sender Name" required />
+                <input type="text" id="gcash-no" placeholder="Sender Number (09xxxxxxxxx)" required />
+
+                <label>Proof of Payment (Screenshot)</label>
+                <div class="file-drop" onclick="document.getElementById('receipt-file').click()">
+                    <input type="file" id="receipt-file" accept="image/*" style="display:none" onchange="document.getElementById('file-label').innerText = this.files[0].name" />
+                    <span id="file-label">Click to upload Receipt</span>
+                </div>
+
+                <p style="text-align:right; font-weight:bold; font-size:1.2rem;" id="total-price">Total: ₱0</p>
+                <button type="submit" class="btn-primary">Confirm Booking</button>
+            </form>
+        </div>
+
+        <div id="tab-my-bookings" class="tab-content hidden">
+            <div id="bookings-list">No bookings found.</div>
+        </div>
+
+        <div id="tab-feedback" class="tab-content hidden">
+            <form id="feedback-form">
+                <label>Rating (1-5)</label>
+                <select id="fb-rating">
+                    <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                    <option value="4">⭐⭐⭐⭐ Very Good</option>
+                    <option value="3">⭐⭐⭐ Good</option>
+                    <option value="2">⭐⭐ Fair</option>
+                    <option value="1">⭐ Poor</option>
+                </select>
+                <label>Message</label>
+                <textarea id="fb-msg" rows="3" required></textarea>
+                <button type="submit" class="btn-primary">Submit Feedback</button>
+            </form>
+            <div id="my-feedbacks" style="margin-top:20px;"></div>
+        </div>
+    </div>
+</div>
+
+<script src="index.js"></script>
+</body>
+</html>
