@@ -16,10 +16,8 @@
         .btn-primary { width:100%; padding:12px; background:var(--accent); color:#fff; border:none; border-radius:6px; font-size:1.1rem; cursor:pointer; }
         .btn-primary:hover{background:var(--accent-dark);}
         
-        /* Updated nav-back for button and text */
-        .nav-back { padding: 15px; background: #fff; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .nav-back { padding: 15px; text-align: center; background: #fff; border-bottom: 1px solid #eee; }
         .nav-back a { text-decoration: none; color: var(--muted); font-weight: 600; }
-        #top-logout-btn { padding:5px 10px; background:#e74c3c; color:#fff; border:none; border-radius:4px; cursor:pointer; display: none; }
 
         .tab-menu { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 10px; background: none; border: none; cursor: pointer; font-weight: 600; color: #888; border-bottom: 3px solid transparent; }
@@ -37,13 +35,10 @@
 </head>
 <body>
 
-<div class="nav-back">
-    <a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home Page</a>
-    <button id="top-logout-btn">Logout</button>
-</div>
+<div class="nav-back"><a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home Page</a></div>
 
 <div class="container">
-    <h1 style="text-align:center; margin-bottom: 30px;" id="main-page-title">Client Login / Register</h1>
+    <h1 style="text-align:center; margin-bottom: 30px;">Booking Form</h1>
 
     <div id="auth-section">
         <div id="login-form">
@@ -72,6 +67,7 @@
     <div id="dashboard-section" class="hidden">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h2 id="user-welcome">Welcome!</h2>
+            <button id="logout-btn" style="padding:5px 10px; background:#e74c3c; color:#fff; border:none; border-radius:4px; cursor:pointer;">Logout</button>
         </div>
 
         <div class="tab-menu">
