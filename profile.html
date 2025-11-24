@@ -38,7 +38,7 @@
 <div class="nav-back"><a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home Page</a></div>
 
 <div class="container">
-    <h1 style="text-align:center; margin-bottom: 30px;">Log In/Register</h1>
+    <h1 style="text-align:center; margin-bottom: 30px;">Booking Form</h1>
 
     <div id="auth-section">
         <div id="login-form">
@@ -53,8 +53,7 @@
         </div>
 
         <div id="register-form" class="hidden">
-            <h3>Register</h3>
-            <form id="register-form-data">
+            <h3>Register</h3> <form id="register-form-data">
                 <label>Full Name</label><input type="text" id="reg-name" required />
                 <label>Email</label><input type="email" id="reg-email" required />
                 <label>Password</label><input type="password" id="reg-pass" required />
@@ -67,7 +66,8 @@
     <div id="dashboard-section" class="hidden">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h2 id="user-welcome">Welcome!</h2>
-            </div>
+            <button id="logout-btn" style="padding:5px 10px; background:#e74c3c; color:#fff; border:none; border-radius:4px; cursor:pointer;">Logout</button>
+        </div>
 
         <div class="tab-menu">
             <button class="tab-btn active" data-tab="tab-book">Book a Room</button>
@@ -102,7 +102,6 @@
 
         <div id="tab-my-bookings" class="tab-content hidden">
             <div id="bookings-list">No bookings found.</div>
-            <button id="logout-btn" style="width:100%; margin-top:20px; padding:10px; background:#e74c3c; color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600;">Logout</button>
         </div>
 
         <div id="tab-feedback" class="tab-content hidden">
@@ -127,5 +126,3 @@
 <script src="index.js"></script>
 </body>
 </html>
-
-
