@@ -20,9 +20,6 @@
     .book-btn:hover { background: var(--accent-dark); }
     .login-btn { background: #fff; border: 1px solid #ccc; color: #333; margin-left: 10px; }
     .login-btn:hover { background: #f0f0f0; }
-    .logout-btn { background: #e74c3c; color: white; margin-left: 10px; }
-    .logout-btn:hover { background: #c0392b; }
-    .hidden{display:none !important;} 
     
     .hero{background-color:#e6f0ff;padding:100px 0;text-align:center;margin-bottom:40px; background-size: cover; background-position: center; position: relative;}
     .hero-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.3); z-index: 1; }
@@ -54,7 +51,6 @@
         <a href="#features">Features</a>
         <a href="profile.html" class="btn book-btn small-btn" id="nav-book-btn">Book Now</a>
         <a href="profile.html" class="btn login-btn small-btn" id="nav-login-btn">Log In / Register</a>
-        <a href="#" class="btn logout-btn small-btn hidden" id="nav-logout-btn">Logout</a>
       </nav>
     </div>
   </header>
@@ -80,4 +76,34 @@
 
     <section id="features" class="section-padding" style="background:#fff;">
         <div class="container">
-            <h2 style="text-
+            <h2 style="text-align:center; margin-bottom: 40px;">Resort Features</h2>
+            <div class="features-grid">
+                <div class="feature-item"><i class="fas fa-swimming-pool"></i><h4>Infinity Pool</h4></div>
+                <div class="feature-item"><i class="fas fa-wifi"></i><h4>Free Wi-Fi</h4></div>
+                <div class="feature-item"><i class="fas fa-umbrella-beach"></i><h4>Beachfront</h4></div>
+            </div>
+        </div>
+    </section>
+  </main>
+
+  <footer id="contact">
+    <div class="container">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+            <div>
+                <h3>Pelagic Beach Resort</h3>
+                <p>Your best choice for a serene beach vacation.</p>
+            </div>
+            <div>
+                <h3>Contact Us</h3>
+                <p>Face book page - Pelagic Beach resort</p>
+                <p>Contact No. : 0917-122-7170 or 0927-498-0222</p>
+                <p>Location: Located at Sitio 7-G, Pagkilatan, Batangas City. 2 to 3 hours drive from Manila, and 45 minutes from SM Batangas City.</p>
+            </div>
+        </div>
+        <p style="text-align:center; margin-top:30px; border-top:1px solid #444; padding-top:20px;">&copy; 2025 Pelagic Beach Resort.</p>
+    </div>
+  </footer>
+
+  <script src="index.js"></script> 
+</body>
+</html>
