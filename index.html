@@ -1,45 +1,49 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Pelagic Beach Resort</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pelagic Beach Resort</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-  <style>
-    :root{ --accent:#0b7db0; --accent-dark:#086b95; --muted:#666; --bg:#f9f9fb; --card:#fff; --shadow:0 4px 12px rgba(0,0,0,0.05); --hero-bg-url: none; }
-    *{box-sizing:border-box}
-    body{font-family:'Inter', sans-serif; line-height:1.6; margin:0; background:var(--bg); color:#222}
-    .container{max-width:1100px;margin:0 auto;padding:0 20px}
-    .section-padding{padding:60px 0;}
-    header{background:#fff;border-bottom:1px solid #e6e6e9;position:sticky;top:0;z-index:40}
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:15px 0}
-    nav a{text-decoration:none;color:#444;margin-left:20px;font-size:15px;transition:0.2s}
-    .btn {padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 14px; text-decoration: none; display: inline-block; transition: 0.2s; cursor: pointer; border:none;}
-    .book-btn { background: var(--accent); color: white; }
-    .book-btn:hover { background: var(--accent-dark); }
-    .login-btn { background: #fff; border: 1px solid #ccc; color: #333; margin-left: 10px; }
-    .login-btn:hover { background: #f0f0f0; }
-    
-    .hero{background-color:#e6f0ff;padding:100px 0;text-align:center;margin-bottom:40px; background-size: cover; background-position: center; position: relative;}
-    .hero-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.3); z-index: 1; }
-    .hero-content { position: relative; z-index: 2; }
-    .hero h1{font-size:3rem;margin-bottom:10px;color:#000; text-shadow: 0 2px 4px rgba(255,255,255,0.8);}
+  <style>
+    :root{ --accent:#0b7db0; --accent-dark:#086b95; --muted:#666; --bg:#f9f9fb; --card:#fff; --shadow:0 4px 12px rgba(0,0,0,0.05); --hero-bg-url: none; }
+    *{box-sizing:border-box}
+    body{font-family:'Inter', sans-serif; line-height:1.6; margin:0; background:var(--bg); color:#222}
+    .container{max-width:1100px;margin:0 auto;padding:0 20px}
+    .section-padding{padding:60px 0;}
+    header{background:#fff;border-bottom:1px solid #e6e6e9;position:sticky;top:0;z-index:40}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:15px 0}
+    nav a{text-decoration:none;color:#444;margin-left:20px;font-size:15px;transition:0.2s}
+    .btn {padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 14px; text-decoration: none; display: inline-block; transition: 0.2s; cursor: pointer; border:none;}
+    .book-btn { background: var(--accent); color: white; }
+    .book-btn:hover { background: var(--accent-dark); }
+    .login-btn { background: #fff; border: 1px solid #ccc; color: #333; margin-left: 10px; }
+    .login-btn:hover { background: #f0f0f0; }
+    /* New Style for Auth Buttons */
+    #logout-btn { display: none; margin-left: 10px; } 
+    #auth-buttons { display: flex; align-items: center; } 
+    /* End New Style */
+    
+    .hero{background-color:#e6f0ff;padding:100px 0;text-align:center;margin-bottom:40px; background-size: cover; background-position: center; position: relative;}
+    .hero-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.3); z-index: 1; }
+    .hero-content { position: relative; z-index: 2; }
+    .hero h1{font-size:3rem;margin-bottom:10px;color:#000; text-shadow: 0 2px 4px rgba(255,255,255,0.8);}
 
-    .rooms-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:30px;margin-top:30px;}
-    .room-card{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
-    .room-card img{width:100%;height:220px;object-fit:cover;display:block;}
-    .card-body{padding:20px;}
-    .card-body h3{margin-top:0;margin-bottom:10px;}
-    .room-amenities span { background: #f0f2f5; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-right: 5px; color: #555; display: inline-block; margin-bottom: 5px;}
-    .price-info{font-size:1.1rem;font-weight:700;margin:15px 0;color:var(--accent-dark)}
-    
-    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:30px;text-align:center;}
-    .feature-item i{font-size:2.5rem;color:var(--accent);margin-bottom:15px;}
-    footer{background:#333;color:#fff;font-size:14px;padding:30px 0;margin-top: 60px;}
-    
-    .back-link { font-size: 14px; text-decoration: none; color: #444; margin-right: 25px; }
-  </style>
+    .rooms-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:30px;margin-top:30px;}
+    .room-card{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
+    .room-card img{width:100%;height:220px;object-fit:cover;display:block;}
+    .card-body{padding:20px;}
+    .card-body h3{margin-top:0;margin-bottom:10px;}
+    .room-amenities span { background: #f0f2f5; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-right: 5px; color: #555; display: inline-block; margin-bottom: 5px;}
+    .price-info{font-size:1.1rem;font-weight:700;margin:15px 0;color:var(--accent-dark)}
+    
+    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:30px;text-align:center;}
+    .feature-item i{font-size:2.5rem;color:var(--accent);margin-bottom:15px;}
+    footer{background:#333;color:#fff;font-size:14px;padding:30px 0;margin-top: 60px;}
+    
+    .back-link { font-size: 14px; text-decoration: none; color: #444; margin-right: 25px; }
+  </style>
 </head>
 <body>
 
@@ -49,61 +53,14 @@
       <nav>
         <a href="#rooms">Rooms</a>
         <a href="#features">Features</a>
-        <a href="profile.html" class="btn book-btn small-btn" id="nav-book-btn">Book Now</a>
-        <a href="profile.html" class="btn login-btn small-btn" id="nav-login-btn">Log In / Register</a>
+        <div id="auth-buttons">
+          <a href="profile.html" class="btn book-btn small-btn" id="nav-book-btn">Book Now</a>
+          <a href="profile.html" class="btn login-btn small-btn" id="nav-auth-btn">Log In / Register</a>
+          <button class="btn login-btn small-btn" id="logout-btn" style="display:none;">Log Out</button>
+        </div>
       </nav>
     </div>
   </header>
 
-  <main>
-    <section class="hero" id="hero-section">
-      <div class="hero-overlay"></div>
-      <div class="hero-content container">
-        <h1>Your Beach Getaway Awaits.</h1>
-        <p style="font-size: 1.2rem; font-weight: 600;">Relax, Unwind, and Enjoy the Ocean Breeze.</p>
-        <a href="profile.html" class="btn book-btn large-btn">Start Booking Now</a>
-      </div>
-    </section>
-
-    <section id="rooms" class="section-padding">
-      <div class="container">
-        <h2 style="text-align:center;">Our Accommodations</h2>
-        <div class="rooms-grid" id="rooms-list">
-          <div style="text-align:center; width:100%; grid-column: 1/-1;">Loading rooms...</div>
-        </div>
-      </div>
-    </section>
-
-    <section id="features" class="section-padding" style="background:#fff;">
-        <div class="container">
-            <h2 style="text-align:center; margin-bottom: 40px;">Resort Features</h2>
-            <div class="features-grid">
-                <div class="feature-item"><i class="fas fa-swimming-pool"></i><h4>Infinity Pool</h4></div
-                <div class="feature-item"><i class="fas fa-wifi"></i><h4>Free Wi-Fi</h4></div>
-                <div class="feature-item"><i class="fas fa-umbrella-beach"></i><h4>Beachfront</h4></div>
-            </div>
-        </div>
-    </section>
-  </main>
-
-  <footer id="contact">
-    <div class="container">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-            <div>
-                <h3>Pelagic Beach Resort</h3>
-                <p>Your best choice for a serene beach vacation.</p>
-            </div>
-            <div>
-                <h3>Contact Us</h3>
-                <p>Face book page - Pelagic Beach resort</p>
-                <p>Contact No. : 0917-122-7170 or 0927-498-0222</p>
-                <p>Location: Located at Sitio 7-G, Pagkilatan, Batangas City. 2 to 3 hours drive from Manila, and 45 minutes from SM Batangas City.</p>
-            </div>
-        </div>
-        <p style="text-align:center; margin-top:30px; border-top:1px solid #444; padding-top:20px;">&copy; 2025 Pelagic Beach Resort.</p>
-    </div>
-  </footer>
-
-  <script src="index.js"></script> 
-</body>
-</html>
+  <main>
+    <section class="hero" id="hero
