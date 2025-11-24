@@ -3,108 +3,187 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Pelagic Beach Resort</title>
+  <title>Pelagic Beach Resort — Online Booking</title>
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
   <style>
-    :root{ --accent:#0b7db0; --accent-dark:#086b95; --muted:#666; --bg:#f9f9fb; --card:#fff; --shadow:0 4px 12px rgba(0,0,0,0.05); --hero-bg-url: none; }
+    /* ⭐ Minimalist Styles for index.html (Assume this is your client.css) ⭐ */
+    :root{
+      --accent:#0b7db0; --accent-dark:#086b95; --muted:#666; 
+      --bg:#f9f9fb; --card:#fff; --shadow:0 4px 12px rgba(0,0,0,0.05);
+    }
     *{box-sizing:border-box}
-    body{font-family:'Inter', sans-serif; line-height:1.6; margin:0; background:var(--bg); color:#222}
+    body{font-family:'Inter', system-ui, sans-serif; line-height:1.6; margin:0; background:var(--bg); color:#222}
     .container{max-width:1100px;margin:0 auto;padding:0 20px}
     .section-padding{padding:60px 0;}
+    
+    /* Header & Nav */
     header{background:#fff;border-bottom:1px solid #e6e6e9;position:sticky;top:0;z-index:40}
     .topbar{display:flex;align-items:center;justify-content:space-between;padding:15px 0}
-    nav a{text-decoration:none;color:#444;margin-left:20px;font-size:15px;transition:0.2s}
-    .btn {padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 14px; text-decoration: none; display: inline-block; transition: 0.2s; cursor: pointer; border:none;}
-    .book-btn { background: var(--accent); color: white; }
-    .book-btn:hover { background: var(--accent-dark); }
-    .login-btn { background: #fff; border: 1px solid #ccc; color: #333; margin-left: 10px; }
-    .login-btn:hover { background: #f0f0f0; }
+    nav a{text-decoration:none;color:#444;margin-left:25px;font-size:15px;transition:color 0.2s}
+    nav a:hover{color:var(--accent-dark)}
     
-    .hero{background-color:#e6f0ff;padding:100px 0;text-align:center;margin-bottom:40px; background-size: cover; background-position: center; position: relative;}
-    .hero-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.3); z-index: 1; }
-    .hero-content { position: relative; z-index: 2; }
-    .hero h1{font-size:3rem;margin-bottom:10px;color:#000; text-shadow: 0 2px 4px rgba(255,255,255,0.8);}
+    /* Buttons - Clean & Consistent */
+    .btn {
+      padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 14px;
+      text-decoration: none; display: inline-block; text-align: center;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .book-btn { background: var(--accent); color: white; border: 1px solid var(--accent); }
+    .book-btn:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+    .large-btn { padding: 15px 30px; font-size: 17px; margin-top: 15px; } /* Prominent Size */
+    .small-btn { padding: 8px 12px; font-size: 13px; } /* Smaller size for cards */
 
+    /* Hero Section */
+    .hero{background-color:#e6f0ff;padding:100px 0;text-align:center;margin-bottom:40px;}
+    .hero h1{font-size:3rem;margin-bottom:10px;color:#222;}
+    .hero p{font-size:1.2rem;color:#444;}
+
+    /* Room Cards - Minimalist */
     .rooms-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:30px;margin-top:30px;}
     .room-card{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
-    .room-card img{width:100%;height:220px;object-fit:cover;display:block;}
+    .room-card img{width:100%;height:200px;object-fit:cover;display:block;}
     .card-body{padding:20px;}
-    .card-body h3{margin-top:0;margin-bottom:10px;}
-    .room-amenities span { background: #f0f2f5; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-right: 5px; color: #555; display: inline-block; margin-bottom: 5px;}
-    .price-info{font-size:1.1rem;font-weight:700;margin:15px 0;color:var(--accent-dark)}
+    .card-body h3{margin-top:0;margin-bottom:10px;font-size:1.5rem;}
+    .room-desc{color:var(--muted);font-size:14px;margin-bottom:15px;min-height:42px;}
+    .price-info{font-size:1.1rem;font-weight:700;margin-bottom:15px;color:var(--accent-dark)}
+    .price-info .price{font-size:1.3rem;}
     
-    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:30px;text-align:center;}
+    /* Feature Section */
+    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:30px;text-align:center;margin-top:30px;}
     .feature-item i{font-size:2.5rem;color:var(--accent);margin-bottom:15px;}
-    footer{background:#333;color:#fff;font-size:14px;padding:30px 0;margin-top: 60px;}
-    
-    .back-link { font-size: 14px; text-decoration: none; color: #444; margin-right: 25px; }
+    .feature-item h4{margin-top:0;}
+
+    /* Footer */
+    footer{background:#333;color:#fff;font-size:14px;padding:30px 0;border-top:5px solid var(--accent-dark);}
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;padding-bottom:20px;}
   </style>
-</head>
+  
+  </head>
 <body>
 
   <header>
     <div class="container topbar">
-      <div style="font-size:1.5rem;font-weight:700;color:var(--accent);">Pelagic Beach Resort</div>
+      <div style="font-size:1.5rem;font-weight:700;color:var(--accent);">Pelagic Resort</div>
       <nav>
         <a href="#rooms">Rooms</a>
         <a href="#features">Features</a>
-        <a href="profile.html" class="btn book-btn small-btn" id="nav-book-btn">Book Now</a>
-        <a href="profile.html" class="btn login-btn small-btn" id="nav-login-btn">Log In / Register</a>
+        <a href="#contact">Contact</a>
+        <a href="profile.html" class="btn book-btn small-btn">Book / Log In</a>
       </nav>
     </div>
   </header>
 
   <main>
-    <section class="hero" id="hero-section">
-      <div class="hero-overlay"></div>
-      <div class="hero-content container">
+    <section class="hero">
+      <div class="container">
         <h1>Your Beach Getaway Awaits.</h1>
-        <p style="font-size: 1.2rem; font-weight: 600;">Relax, Unwind, and Enjoy the Ocean Breeze.</p>
-        <a href="profile.html" class="btn book-btn large-btn">Start Booking Now</a>
+        <p>Book your perfect tropical escape at Pelagic Beach Resort.</p>
+        <a href="profile.html" class="btn book-btn large-btn">Start Booking Now!</a>
       </div>
     </section>
 
     <section id="rooms" class="section-padding">
       <div class="container">
-        <h2 style="text-align:center;">Our Accommodations</h2>
+        <h2>Our Accommodations</h2>
+        <p class="section-subtext" style="color:var(--muted);text-align:center;margin-bottom:40px;">Choose your ideal retreat, from cozy rooms to spacious villas and cottages.</p>
         <div class="rooms-grid" id="rooms-list">
-          <div style="text-align:center; width:100%; grid-column: 1/-1;">Loading rooms...</div>
-        </div>
+          </div>
       </div>
     </section>
 
-    <section id="features" class="section-padding" style="background:#fff;">
+    <section id="features" class="section-padding">
         <div class="container">
-            <h2 style="text-align:center; margin-bottom: 40px;">Resort Features</h2>
+            <h2 style="text-align:center; margin-bottom:40px;">Why Choose Pelagic?</h2>
             <div class="features-grid">
-                <div class="feature-item"><i class="fas fa-swimming-pool"></i><h4>Infinity Pool</h4></div>
-                <div class="feature-item"><i class="fas fa-utensils"></i><h4>Resto Bar</h4></div>
-                <div class="feature-item"><i class="fas fa-wifi"></i><h4>Free Wi-Fi</h4></div>
-                <div class="feature-item"><i class="fas fa-umbrella-beach"></i><h4>Beachfront</h4></div>
+                
+                <div class="feature-item">
+                    <i class="fas fa-cocktail"></i>
+                    <h4>Beach Bar</h4>
+                    <p>Full-Service Beach Bar</p>
+                </div>
+
+                <div class="feature-item">
+                    <i class="fas fa-ship"></i>
+                    <h4>Ocean Tours</h4>
+                    <p>Exclusive Dive & Snorkel Tours</p>
+                </div>
+
+                <div class="feature-item">
+                    <i class="fas fa-swimming-pool"></i>
+                    <h4>Infinity Pool</h4>
+                    <p>Infinity Pool with Ocean View</p>
+                </div>
+
+                <div class="feature-item">
+                    <i class="fas fa-utensils"></i>
+                    <h4>Dining</h4>
+                    <p>All-Day International Dining</p>
+                </div>
             </div>
         </div>
     </section>
-  </main>
+    </main>
 
-  <footer id="contact">
-    <div class="container">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-            <div>
-                <h3>Pelagic Beach Resort</h3>
-                <p>Your best choice for a serene beach vacation.</p>
-            </div>
-            <div>
-                <h3>Contact Us</h3>
-                <p>Face book page - Pelagic Beach resort</p>
-                <p>Contact No. : 0917-122-7170 or 0927-498-0222</p>
-                <p>Location: Located at Sitio 7-G, Pagkilatan, Batangas City. 2 to 3 hours drive from Manila, and 45 minutes from SM Batangas City.</p>
-            </div>
-        </div>
-        <p style="text-align:center; margin-top:30px; border-top:1px solid #444; padding-top:20px;">&copy; 2025 Pelagic Beach Resort.</p>
-    </div>
+  <footer id="contact" class="section-padding">
+    <div class="container contact-grid">
+      </div>
   </footer>
 
-  <script src="index.js"></script> 
+  <script>
+    // ⭐️ NEW SCRIPT TO FETCH ROOMS FROM NETLIFY FUNCTION / MONGODB ⭐️
+    async function renderIndexRooms() {
+        const list = document.getElementById('rooms-list');
+        // Initial loading message
+        list.innerHTML = '<p style="text-align:center; padding:20px; grid-column:1/-1;">Loading rooms from the cloud...</p>'; 
+
+        try {
+            // Call the Netlify Function API endpoint
+            const response = await fetch('/.netlify/functions/get-rooms');
+            
+            if (!response.ok) {
+                 // Throw an error if the status code is not 200
+                 throw new Error(`Failed to fetch rooms: ${response.statusText}`);
+            }
+
+            const rooms = await response.json();
+            
+            if (rooms.length === 0) {
+                list.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding:20px;">No rooms currently available in the database.</p>';
+                return;
+            }
+
+            const placeholder = "https://via.placeholder.com/400x250?text=Room+Photo";
+
+            // Map the fetched rooms to HTML cards
+            list.innerHTML = rooms.map(r => `
+                <div class="room-card">
+                    <img src="${r.image && r.image.length > 100 ? r.image : placeholder}" alt="${r.name}">
+                    <div class="card-body">
+                        <h3>${r.name}</h3>
+                        <p class="room-desc">${r.desc}</p>
+                        <div class="room-amenities">${r.amenities ? r.amenities.split(',').map(a => `<span>${a.trim()}</span>`).join('') : ''}</div>
+                        <div class="price-info">
+                            <span class="price">₱ ${Number(r.price).toLocaleString()}</span> / ${r.type === 'overnight' ? 'Night' : 'Day'}
+                        </div>
+                        <a href="profile.html?room=${r._id}" class="btn book-btn small-btn" style="float:right;">Book This Room</a>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (error) {
+            console.error("Error loading rooms:", error);
+            list.innerHTML = `<p style="text-align:center; color:red; grid-column:1/-1; padding:20px;">Error loading rooms: ${error.message}. Please ensure your MONGO_URI is set correctly on Netlify and your 'get-rooms.js' function is correct.</p>`;
+        }
+    }
+
+    // Call the new async function when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.getElementById('rooms-list')) {
+            renderIndexRooms();
+        }
+    });
+  </script>
 </body>
 </html>
