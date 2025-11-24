@@ -117,7 +117,7 @@ function checkAuthState() {
         
         loadBookingOptions(); 
         loadMyBookings(uObj.email);
-        renderUserFeedbacks(); // Load feedbacks on login
+        renderUserFeedbacks(); 
 
         const urlParams = new URLSearchParams(window.location.search);
         const roomID = urlParams.get('room');
@@ -126,8 +126,11 @@ function checkAuthState() {
             setTimeout(() => { select.value = roomID; select.dispatchEvent(new Event('change')); }, 100);
         }
     } else {
+        // FIX: Ensures the dashboard is hidden and only the login/register forms are visible.
         document.getElementById('auth-section').classList.remove('hidden');
         document.getElementById('dashboard-section').classList.add('hidden');
+        document.getElementById('login-form').classList.remove('hidden');
+        document.getElementById('register-form').classList.add('hidden');
     }
 }
 
