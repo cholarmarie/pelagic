@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupDateRestrictions();
     }
     
-    // Setup listener for the new homepage Logout button
+    // Setup listener for the new homepage Logout button (error-free check)
     document.getElementById('nav-logout-btn')?.addEventListener('click', () => {
         sessionStorage.removeItem('pelagic_user');
         // Redirect to homepage to refresh state
@@ -51,18 +51,20 @@ function updateNavState() {
     const user = sessionStorage.getItem('pelagic_user');
     const loginBtn = document.getElementById('nav-login-btn');
     const bookBtn = document.getElementById('nav-book-btn');
-    const logoutBtn = document.getElementById('nav-logout-btn'); // NEW
+    const logoutBtn = document.getElementById('nav-logout-btn'); 
 
     if (user) {
+        // Logged In: Hide Login, Show Logout, Change Book Button text
         if (loginBtn) loginBtn.style.display = 'none';
-        if (logoutBtn) logoutBtn.style.display = 'inline-block'; // Show logout
+        if (logoutBtn) logoutBtn.style.display = 'inline-block';
         if (bookBtn) {
             bookBtn.textContent = "My Dashboard";
             bookBtn.href = "profile.html";
         }
     } else {
+        // Logged Out: Show Login, Hide Logout, Reset Book Button text
         if (loginBtn) loginBtn.style.display = 'inline-block';
-        if (logoutBtn) logoutBtn.style.display = 'none'; // Hide logout
+        if (logoutBtn) logoutBtn.style.display = 'none';
         if (bookBtn) bookBtn.textContent = "Book Now";
     }
 }
@@ -172,7 +174,7 @@ document.getElementById('register-form-data')?.addEventListener('submit', (e) =>
     document.getElementById('show-login').click();
 });
 
-// The logout button on profile.html is still handled here to clear the session
+// This logout button is on profile.html, handled safely with optional chaining.
 document.getElementById('logout-btn')?.addEventListener('click', () => {
     sessionStorage.removeItem('pelagic_user');
     window.location.href = 'index.html'; 
