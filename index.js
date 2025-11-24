@@ -1,110 +1,327 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Pelagic Beach Resort</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+/**
+ * MASTER JAVASCRIPT FILE
+ * Handles Client Logic: Rooms, Auth, UI Updates
+ */
 
-  <style>
-    :root{ --accent:#0b7db0; --accent-dark:#086b95; --muted:#666; --bg:#f9f9fb; --card:#fff; --shadow:0 4px 12px rgba(0,0,0,0.05); --hero-bg-url: none; }
-    *{box-sizing:border-box}
-    body{font-family:'Inter', sans-serif; line-height:1.6; margin:0; background:var(--bg); color:#222}
-    .container{max-width:1100px;margin:0 auto;padding:0 20px}
-    .section-padding{padding:60px 0;}
-    header{background:#fff;border-bottom:1px solid #e6e6e9;position:sticky;top:0;z-index:40}
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:15px 0}
-    nav a{text-decoration:none;color:#444;margin-left:20px;font-size:15px;transition:0.2s}
-    .btn {padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 14px; text-decoration: none; display: inline-block; transition: 0.2s; cursor: pointer; border:none;}
-    .book-btn { background: var(--accent); color: white; }
-    .book-btn:hover { background: var(--accent-dark); }
-    .login-btn { background: #fff; border: 1px solid #ccc; color: #333; margin-left: 10px; }
-    .login-btn:hover { background: #f0f0f0; }
+// --- 1. DATABASE HELPER ---
+const DB = {
+    get: (key) => JSON.parse(localStorage.getItem(key)) || [],
+    set: (key, val) => localStorage.setItem(key, JSON.stringify(val)),
+    getObj: (key) => JSON.parse(localStorage.getItem(key)) || {},
+};
+
+// --- 2. INITIALIZATION & SEEDING ---
+(function initData() {
+    // Seed Rooms if empty
+    if (!localStorage.getItem('pelagic_rooms')) {
+        const defaultRooms = [
+            { id: 'R1', name: 'Standard Room', price: 3500, type: 'overnight', desc: 'Cozy room for 2 pax with AC.', amenities: 'AC, Private Bath', image: '' },
+            { id: 'V1', name: 'Ocean Villa', price: 5000, type: 'overnight', desc: 'Villa with balcony and kitchen.', amenities: 'Kitchen, Balcony, AC', image: '' }
+        ];
+        DB.set('pelagic_rooms', defaultRooms);
+    }
+})();
+
+// --- 3. DOM EVENT LISTENERS ---
+document.addEventListener('DOMContentLoaded', () => {
+    updateNavState(); 
+    loadHeroBackground();
+
+    if (document.getElementById('rooms-list')) {
+        renderIndexRooms();
+    }
+
+    if (document.getElementById('auth-section')) {
+        checkAuthState();
+        setupTabs();
+        setupDateRestrictions();
+    }
+});
+
+// --- 4. UI & NAVIGATION LOGIC ---
+
+function updateNavState() {
+    const user = sessionStorage.getItem('pelagic_user');
+    const loginBtn = document.getElementById('nav-login-btn');
+    const bookBtn = document.getElementById('nav-book-btn');
+
+    if (user) {
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (bookBtn) {
+            bookBtn.textContent = "My Dashboard";
+            bookBtn.href = "profile.html";
+        }
+    } else {
+        if (loginBtn) loginBtn.style.display = 'inline-block';
+        if (bookBtn) bookBtn.textContent = "Book Now";
+    }
+}
+
+function loadHeroBackground() {
+    const gallery = DB.getObj('pelagic_gallery');
+    const heroSection = document.getElementById('hero-section');
+    if (heroSection && gallery.bg) {
+        heroSection.style.backgroundImage = `url(${gallery.bg})`;
+    }
+}
+
+// --- 5. HOME PAGE: RENDER ROOMS ---
+function renderIndexRooms() {
+    const list = document.getElementById('rooms-list');
+    const rooms = DB.get('pelagic_rooms');
     
-    .hero{background-color:#e6f0ff;padding:100px 0;text-align:center;margin-bottom:40px; background-size: cover; background-position: center; position: relative;}
-    .hero-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.3); z-index: 1; }
-    .hero-content { position: relative; z-index: 2; }
-    .hero h1{font-size:3rem;margin-bottom:10px;color:#000; text-shadow: 0 2px 4px rgba(255,255,255,0.8);}
+    list.innerHTML = ''; 
 
-    .rooms-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:30px;margin-top:30px;}
-    .room-card{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);}
-    .room-card img{width:100%;height:220px;object-fit:cover;display:block;}
-    .card-body{padding:20px;}
-    .card-body h3{margin-top:0;margin-bottom:10px;}
-    .room-amenities span { background: #f0f2f5; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-right: 5px; color: #555; display: inline-block; margin-bottom: 5px;}
-    .price-info{font-size:1.1rem;font-weight:700;margin:15px 0;color:var(--accent-dark)}
-    
-    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:30px;text-align:center;}
-    .feature-item i{font-size:2.5rem;color:var(--accent);margin-bottom:15px;}
-    footer{background:#333;color:#fff;font-size:14px;padding:30px 0;margin-top: 60px;}
-    
-    .back-link { font-size: 14px; text-decoration: none; color: #444; margin-right: 25px; }
-  </style>
-</head>
-<body>
+    if (rooms.length === 0) {
+        list.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding:20px;">No rooms currently available.</p>';
+        return;
+    }
 
-  <header>
-    <div class="container topbar">
-      <div style="font-size:1.5rem;font-weight:700;color:var(--accent);">Pelagic Beach Resort</div>
-      <nav>
-        <a href="#rooms">Rooms</a>
-        <a href="#features">Features</a>
-        <a href="profile.html" class="btn book-btn small-btn" id="nav-book-btn">Book Now</a>
-        <a href="profile.html" class="btn login-btn small-btn" id="nav-login-btn">Log In / Register</a>
-      </nav>
-    </div>
-  </header>
+    const placeholder = "https://via.placeholder.com/400x250?text=Room+Photo";
 
-  <main>
-    <section class="hero" id="hero-section">
-      <div class="hero-overlay"></div>
-      <div class="hero-content container">
-        <h1>Your Beach Getaway Awaits.</h1>
-        <p style="font-size: 1.2rem; font-weight: 600;">Relax, Unwind, and Enjoy the Ocean Breeze.</p>
-        <a href="profile.html" class="btn book-btn large-btn">Start Booking Now</a>
-      </div>
-    </section>
-
-    <section id="rooms" class="section-padding">
-      <div class="container">
-        <h2 style="text-align:center;">Our Accommodations</h2>
-        <div class="rooms-grid" id="rooms-list">
-          <div style="text-align:center; width:100%; grid-column: 1/-1;">Loading rooms...</div>
-        </div>
-      </div>
-    </section>
-
-    <section id="features" class="section-padding" style="background:#fff;">
-        <div class="container">
-            <h2 style="text-align:center; margin-bottom: 40px;">Resort Features</h2>
-            <div class="features-grid">
-                <div class="feature-item"><i class="fas fa-swimming-pool"></i><h4>Infinity Pool</h4></div>
-                <div class="feature-item"><i class="fas fa-utensils"></i><h4>Resto Bar</h4></div>
-                <div class="feature-item"><i class="fas fa-wifi"></i><h4>Free Wi-Fi</h4></div>
-                <div class="feature-item"><i class="fas fa-umbrella-beach"></i><h4>Beachfront</h4></div>
+    list.innerHTML = rooms.map(r => `
+        <div class="room-card">
+            <img src="${r.image && r.image.length > 100 ? r.image : placeholder}" alt="${r.name}">
+            <div class="card-body">
+                <h3>${r.name}</h3>
+                <p class="room-desc">${r.desc}</p>
+                <div class="room-amenities">${r.amenities ? r.amenities.split(',').map(a => `<span>${a.trim()}</span>`).join('') : ''}</div>
+                <div class="price-info">₱ ${Number(r.price).toLocaleString()}</div> 
+                <a href="profile.html?room=${r.id}" class="btn book-btn small-btn" style="float:right;">Book Now</a>
             </div>
         </div>
-    </section>
-  </main>
+    `).join('');
+}
 
-  <footer id="contact">
-    <div class="container">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-            <div>
-                <h3>Pelagic Beach Resort</h3>
-                <p>Your best choice for a serene beach vacation.</p>
+// --- 6. PROFILE PAGE: AUTH & DASHBOARD ---
+
+function checkAuthState() {
+    const user = sessionStorage.getItem('pelagic_user');
+    if (user) {
+        const uObj = JSON.parse(user);
+        document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('dashboard-section').classList.remove('hidden');
+        document.getElementById('user-welcome').textContent = `Welcome, ${uObj.name}!`;
+        
+        loadBookingOptions(); 
+        loadMyBookings(uObj.email);
+        renderUserFeedbacks(); // Load feedbacks on login
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomID = urlParams.get('room');
+        if(roomID) {
+            const select = document.getElementById('book-room');
+            setTimeout(() => { select.value = roomID; select.dispatchEvent(new Event('change')); }, 100);
+        }
+    } else {
+        document.getElementById('auth-section').classList.remove('hidden');
+        document.getElementById('dashboard-section').classList.add('hidden');
+    }
+}
+
+document.getElementById('show-register')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('register-form').classList.remove('hidden');
+});
+document.getElementById('show-login')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    document.getElementById('register-form').classList.add('hidden');
+    document.getElementById('login-form').classList.remove('hidden');
+});
+
+document.getElementById('login-form-data')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('login-email').value;
+    const pass = document.getElementById('login-pass').value;
+    const users = DB.get('pelagic_users');
+    
+    const validUser = users.find(u => u.email === email && u.pass === pass);
+
+    if (validUser) {
+        sessionStorage.setItem('pelagic_user', JSON.stringify(validUser));
+        checkAuthState();
+        updateNavState();
+    } else {
+        alert('Invalid email or password.');
+    }
+});
+
+document.getElementById('register-form-data')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('reg-name').value;
+    const email = document.getElementById('reg-email').value;
+    const pass = document.getElementById('reg-pass').value;
+    
+    const users = DB.get('pelagic_users');
+    if (users.find(u => u.email === email)) return alert('Email already registered.');
+
+    users.push({ name, email, pass });
+    DB.set('pelagic_users', users);
+    alert('Account created successfully! Please log in.');
+    document.getElementById('show-login').click();
+});
+
+document.getElementById('logout-btn')?.addEventListener('click', () => {
+    sessionStorage.removeItem('pelagic_user');
+    window.location.href = 'index.html'; 
+});
+
+// --- 7. BOOKING FORM LOGIC ---
+
+function setupDateRestrictions() {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    const today = now.toISOString().slice(0, 16);
+
+    const inInput = document.getElementById('book-in');
+    const outInput = document.getElementById('book-out');
+
+    if (inInput && outInput) {
+        inInput.min = today;
+        outInput.min = today;
+        
+        inInput.addEventListener('change', () => {
+            outInput.min = inInput.value; 
+        });
+    }
+}
+
+function loadBookingOptions() {
+    const rooms = DB.get('pelagic_rooms');
+    const select = document.getElementById('book-room');
+    
+    select.innerHTML = '<option value="">Select a Room...</option>' + 
+        rooms.map(r => `<option value="${r.id}" data-price="${r.price}">${r.name}</option>`).join('');
+    
+    select.addEventListener('change', () => {
+        const opt = select.options[select.selectedIndex];
+        const price = opt.getAttribute('data-price') || 0;
+        document.getElementById('total-price').textContent = `Total: ₱${Number(price).toLocaleString()}`;
+    });
+}
+
+const toBase64 = file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+});
+
+document.getElementById('booking-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = JSON.parse(sessionStorage.getItem('pelagic_user'));
+    const roomSelect = document.getElementById('book-room');
+    const fileInput = document.getElementById('receipt-file');
+    
+    if (!roomSelect.value) return alert('Please select a room.');
+    if (fileInput.files.length === 0) return alert('Please upload proof of payment.');
+
+    const receiptBase64 = await toBase64(fileInput.files[0]);
+    
+    const booking = {
+        id: 'BK' + Date.now().toString().slice(-6),
+        userId: user.email, 
+        guestName: user.name,
+        guestEmail: user.email,
+        roomID: roomSelect.value,
+        roomName: roomSelect.options[roomSelect.selectedIndex].text,
+        in: document.getElementById('book-in').value,
+        out: document.getElementById('book-out').value,
+        gcash: document.getElementById('gcash-name').value + ' (' + document.getElementById('gcash-no').value + ')',
+        total: document.getElementById('total-price').textContent,
+        receipt: receiptBase64,
+        status: 'pending',
+        dateSubmitted: new Date().toISOString()
+    };
+
+    const bookings = DB.get('pelagic_bookings');
+    bookings.push(booking);
+    DB.set('pelagic_bookings', bookings);
+
+    alert('Booking Submitted! Wait for Admin Approval.');
+    document.getElementById('booking-form').reset();
+    document.querySelector('.tab-btn[data-tab="tab-my-bookings"]').click(); 
+    loadMyBookings(user.email);
+});
+
+function loadMyBookings(email) {
+    const list = document.getElementById('bookings-list');
+    const bookings = DB.get('pelagic_bookings').filter(b => b.guestEmail === email);
+    
+    if (bookings.length === 0) {
+        list.innerHTML = '<p>No bookings found.</p>';
+        return;
+    }
+
+    list.innerHTML = bookings.map(b => `
+        <div class="status-card status-${b.status}">
+            <div style="display:flex; justify-content:space-between;">
+                <h4>${b.roomName}</h4>
+                <span style="text-transform:uppercase; font-weight:bold; font-size:0.9rem;">${b.status}</span>
             </div>
-            <div>
-                <h3>Contact Us</h3>
-                <p>Face book page - Pelagic Beach resort</p>
-                <p>Contact No. : 0917-122-7170 or 0927-498-0222</p>
-                <p>Location: Located at Sitio 7-G, Pagkilatan, Batangas City. 2 to 3 hours drive from Manila, and 45 minutes from SM Batangas City.</p>
-            </div>
+            <p style="margin:5px 0; font-size:0.9rem;">${new Date(b.in).toLocaleDateString()} - ${new Date(b.out).toLocaleDateString()}</p>
+            <p style="margin:0; font-weight:bold;">${b.total}</p>
         </div>
-        <p style="text-align:center; margin-top:30px; border-top:1px solid #444; padding-top:20px;">&copy; 2025 Pelagic Beach Resort.</p>
-    </div>
-  </footer>
+    `).join('');
+}
 
-  <script src="index.js"></script> 
-</body>
-</html>
+// --- 8. FEEDBACK LOGIC (FIXED) ---
+document.getElementById('feedback-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const user = JSON.parse(sessionStorage.getItem('pelagic_user'));
+    
+    const rating = document.getElementById('fb-rating').value;
+    const msg = document.getElementById('fb-msg').value;
+
+    const fb = {
+        id: Date.now(),
+        userId: user.email,
+        guestName: user.name,
+        guestEmail: user.email,
+        rating: rating,
+        msg: msg,
+        date: new Date().toLocaleDateString()
+    };
+    
+    // Use standard key 'pelagic_feedbacks'
+    const feeds = DB.get('pelagic_feedbacks');
+    feeds.push(fb);
+    DB.set('pelagic_feedbacks', feeds);
+    
+    alert('Feedback Sent!');
+    document.getElementById('feedback-form').reset();
+    renderUserFeedbacks();
+});
+
+function renderUserFeedbacks() {
+    const user = JSON.parse(sessionStorage.getItem('pelagic_user'));
+    const list = document.getElementById('my-feedbacks');
+    // Use standard key 'pelagic_feedbacks'
+    const feeds = DB.get('pelagic_feedbacks').filter(f => f.guestEmail === user.email);
+    
+    if(list) {
+        list.innerHTML = feeds.length ? feeds.map(f => `
+            <div class="status-card" style="border-left-color: #f39c12;">
+                <div style="display:flex; justify-content:space-between;">
+                    <strong>${f.rating}/5 Stars</strong>
+                    <small>${f.date}</small>
+                </div>
+                <p style="margin-top:5px; font-style:italic;">"${f.msg}"</p>
+            </div>
+        `).join('') : '<p>You have not submitted any feedback yet.</p>';
+    }
+}
+
+// --- 9. TABS LOGIC ---
+function setupTabs() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(t => {
+        t.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+            t.classList.add('active');
+            document.getElementById(t.dataset.tab).classList.remove('hidden');
+        });
+    });
+}
