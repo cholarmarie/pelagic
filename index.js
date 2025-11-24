@@ -36,6 +36,13 @@ document.addEventListener('DOMContentLoaded', () => {
         setupTabs();
         setupDateRestrictions();
     }
+    
+    // Setup listener for the new homepage Logout button
+    document.getElementById('nav-logout-btn')?.addEventListener('click', () => {
+        sessionStorage.removeItem('pelagic_user');
+        // Redirect to homepage to refresh state
+        window.location.href = 'index.html'; 
+    });
 });
 
 // --- 4. UI & NAVIGATION LOGIC ---
@@ -44,15 +51,18 @@ function updateNavState() {
     const user = sessionStorage.getItem('pelagic_user');
     const loginBtn = document.getElementById('nav-login-btn');
     const bookBtn = document.getElementById('nav-book-btn');
+    const logoutBtn = document.getElementById('nav-logout-btn'); // NEW
 
     if (user) {
         if (loginBtn) loginBtn.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'inline-block'; // Show logout
         if (bookBtn) {
             bookBtn.textContent = "My Dashboard";
             bookBtn.href = "profile.html";
         }
     } else {
         if (loginBtn) loginBtn.style.display = 'inline-block';
+        if (logoutBtn) logoutBtn.style.display = 'none'; // Hide logout
         if (bookBtn) bookBtn.textContent = "Book Now";
     }
 }
@@ -162,6 +172,7 @@ document.getElementById('register-form-data')?.addEventListener('submit', (e) =>
     document.getElementById('show-login').click();
 });
 
+// The logout button on profile.html is still handled here to clear the session
 document.getElementById('logout-btn')?.addEventListener('click', () => {
     sessionStorage.removeItem('pelagic_user');
     window.location.href = 'index.html'; 
