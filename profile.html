@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pelagic Beach Resort | Booking</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        :root{ --accent:#0b7db0; --accent-dark:#086b95; --muted:#666; --bg:#f9f9fb; --card:#fff; }
+        body{font-family:'Inter', sans-serif; margin:0; background:var(--bg); color:#222}
+        .container{max-width:800px; margin:40px auto; padding:20px; background:var(--card); border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.05);}
+        .hidden{display:none !important;}
+        
+        input, select, textarea { width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin-bottom:15px; }
+        label { font-weight: 600; font-size: 0.9rem; display: block; margin-bottom: 5px; }
+        .btn-primary { width:100%; padding:12px; background:var(--accent); color:#fff; border:none; border-radius:6px; font-size:1.1rem; cursor:pointer; }
+        .btn-primary:hover{background:var(--accent-dark);}
+        
+        .nav-back { padding: 15px; text-align: center; background: #fff; border-bottom: 1px solid #eee; }
+        .nav-back a { text-decoration: none; color: var(--muted); font-weight: 600; }
+
+        .tab-menu { display: flex; border-bottom: 2px solid #eee; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 10px; background: none; border: none; cursor: pointer; font-weight: 600; color: #888; border-bottom: 3px solid transparent; }
+        .tab-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
+
+        .status-card { background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 8px; border-left: 5px solid #ccc; margin-bottom: 15px; }
+        .status-approved { border-left-color: #2ecc71; }
+        .status-declined { border-left-color: #e74c3c; }
+        .status-pending { border-left-color: #f1c40f; }
+
+        .file-drop { border: 2px dashed #ccc; padding: 20px; text-align: center; cursor: pointer; border-radius: 8px; margin-bottom: 15px; }
+        .admin-link { text-align: center; margin-top: 20px; font-size: 0.85rem; }
+        .admin-link a { color: var(--muted); text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="nav-back"><a href="index.html"><i class="fas fa-arrow-left"></i> Back to Home Page</a></div>
+
+<div class="container">
+    <h1 style="text-align:center; margin-bottom: 30px;">Booking Form</h1>
+
+    <div id="auth-section">
+        <div id="login-form">
+            <h3>Login</h3>
+            <form id="login-form-data">
+                <label>Email</label><input type="email" id="login-email" required />
+                <label>Password</label><input type="password" id="login-pass" required />
+                <button type="submit" class="btn-primary">Login</button>
+            </form>
+            <p style="text-align:center; margin-top:15px;">No account? <a href="#" id="show-register">Register</a></p>
+            <div class="admin-link"><a href="admin.html">Admin Login</a></div>
+        </div>
+
+        <div id="register-form" class="hidden">
+            <h3>Create Account</h3>
+            <form id="register-form-data">
+                <label>Full Name</label><input type="text" id="reg-name" required />
+                <label>Email</label><input type="email" id="reg-email" required />
+                <label>Password</label><input type="password" id="reg-pass" required />
+                <button type="submit" class="btn-primary">Register</button>
+            </form>
+            <p style="text-align:center; margin-top:15px;">Has account? <a href="#" id="show-login">Login</a></p>
+        </div>
+    </div>
+
+    <div id="dashboard-section" class="hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 id="user-welcome">Welcome!</h2>
+            <button id="logout-btn" style="padding:5px 10px; background:#e74c3c; color:#fff; border:none; border-radius:4px; cursor:pointer;">Logout</button>
+        </div>
+
+        <div class="tab-menu">
+            <button class="tab-btn active" data-tab="tab-book">Book a Room</button>
+            <button class="tab-btn" data-tab="tab-my-bookings">My Bookings</button>
+            <button class="tab-btn" data-tab="tab-feedback">Feedback</button>
+        </div>
+
+        <div id="tab-book" class="tab-content">
+            <form id="booking-form">
+                <label>Select Room</label>
+                <select id="book-room" required><option value="">Loading rooms...</option></select>
+                
+                <div style="display:flex; gap:15px;">
+                    <div style="flex:1;"><label>Check-in</label><input type="datetime-local" id="book-in" required /></div>
+                    <div style="flex:1;"><label>Check-out</label><input type="datetime-local" id="book-out" required /></div>
+                </div>
+
+                <label>Payment (GCash Transaction)</label>
+                <input type="text" id="gcash-name" placeholder="Sender Name" required />
+                <input type="text" id="gcash-no" placeholder="Sender Number (09xxxxxxxxx)" required />
+
+                <label>Proof of Payment (Screenshot)</label>
+                <div class="file-drop" onclick="document.getElementById('receipt-file').click()">
+                    <input type="file" id="receipt-file" accept="image/*" style="display:none" onchange="document.getElementById('file-label').innerText = this.files[0].name" />
+                    <span id="file-label">Click to upload Receipt</span>
+                </div>
+
+                <p style="text-align:right; font-weight:bold; font-size:1.2rem;" id="total-price">Total: ₱0</p>
+                <button type="submit" class="btn-primary">Confirm Booking</button>
+            </form>
+        </div>
+
+        <div id="tab-my-bookings" class="tab-content hidden">
+            <div id="bookings-list">No bookings found.</div>
+        </div>
+
+        <div id="tab-feedback" class="tab-content hidden">
+            <form id="feedback-form">
+                <label>Rating (1-5)</label>
+                <select id="fb-rating">
+                    <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                    <option value="4">⭐⭐⭐⭐ Very Good</option>
+                    <option value="3">⭐⭐⭐ Good</option>
+                    <option value="2">⭐⭐ Fair</option>
+                    <option value="1">⭐ Poor</option>
+                </select>
+                <label>Message</label>
+                <textarea id="fb-msg" rows="3" required></textarea>
+                <button type="submit" class="btn-primary">Submit Feedback</button>
+            </form>
+            <div id="my-feedbacks" style="margin-top:20px;"></div>
+        </div>
+    </div>
+</div>
+
+<script src="index.js"></script>
+</body>
+</html>

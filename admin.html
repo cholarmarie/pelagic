@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard - Pelagic Beach Resort</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  
+  <style>
+    /* ⭐ Minimalist Admin Styles ⭐ */
+    :root{
+        --accent:#0b7db0; --accent-dark:#086b95; --muted:#666; 
+        --bg:#f1f5f9; --card:#fff; --shadow:0 6px 18px rgba(0,0,0,0.1);
+    }
+    *{box-sizing:border-box}
+    body{font-family:'Inter', system-ui, sans-serif; margin:0; background:var(--bg); color:#222}
+    .hidden { display: none !important; }
+
+    /* Auth Styles */
+    .auth-container { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .auth-card { background:#fff; padding:28px; border-radius:8px; width:360px; box-shadow:var(--shadow); }
+    
+    /* Global Elements */
+    input, select, textarea { width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin-bottom:15px; }
+    label { font-weight: 600; font-size: 0.9rem; display: block; margin-bottom: 5px; }
+    .btn { padding: 10px 18px; border-radius: 6px; font-weight: 600; font-size: 14px; text-decoration: none; display: inline-block; transition: 0.2s; cursor: pointer; border: none; }
+    .btn-block { width:100%; padding:12px; background:var(--accent); color:#fff; font-size:1.1rem; }
+    .btn-block:hover { background:var(--accent-dark); }
+    .btn-danger { background:#e74c3c; color:#fff; }
+    .btn-danger:hover { background:#c0392b; }
+    .btn-small { padding: 5px 10px; font-size: 13px; }
+
+    /* Dashboard Layout */
+    .dashboard-container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+    .tabs-menu { display: flex; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
+    .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: none; font-weight: 600; color: #666; border-bottom: 3px solid transparent; transition: all 0.2s; }
+    .tab-btn.active { color: var(--accent); border-bottom: 3px solid var(--accent); }
+    .panel-content { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+    /* Table Styles */
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9rem; }
+    th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f7f9fa; font-weight: 700; color: #555; }
+    tr:last-child td { border-bottom: none; }
+
+    /* Modal Styles */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { background: #fff; padding: 30px; border-radius: 10px; width: 500px; max-height: 90vh; overflow-y: auto; position: relative; }
+    .modal-close { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #888; }
+    .receipt-img { max-width: 100%; height: auto; display: block; margin-top: 15px; border: 1px solid #eee; border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+  <div class="auth-container" id="admin-login">
+    <div class="auth-card">
+      <h3>Admin Login</h3>
+      <form id="admin-login-form">
+        <label>Email</label>
+        <input type="email" id="admin-email" required />
+        <label>Password</label>
+        <input type="password" id="admin-pass" required />
+        <button type="submit" class="btn btn-block">Login</button>
+      </form>
+      <p style="text-align:center; margin-top:15px; font-size:0.9rem;"><a href="index.html">Back to Site</a></p>
+    </div>
+  </div>
+
+  <div class="dashboard-container hidden" id="admin-dashboard">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+        <h1 style="margin:0;">Dashboard</h1>
+        <button id="admin-logout" class="btn btn-danger btn-small">Logout</button>
+    </div>
+
+    <div class="tabs-menu">
+      <button class="tab-btn active" onclick="switchTab('bookings')">Bookings</button>
+      <button class="tab-btn" onclick="switchTab('rooms')">Rooms</button>
+      <button class="tab-btn" onclick="switchTab('feedback')">Feedback</button>
+      <button class="tab-btn" onclick="switchTab('gallery')">Gallery</button>
+    </div>
+
+    <div class="panel-content">
+      <div id="panel-bookings" class="panel">
+        <h2>Booking Requests</h2>
+        <table>
+          <thead><tr><th>ID</th><th>Guest</th><th>Room</th><th>Total</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="booking-table">
+            <tr><td colspan="6" style="text-align:center;">No bookings found.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="panel-rooms" class="panel hidden">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2>Room Management</h2>
+            <button class="btn btn-block btn-small" style="width:auto;" onclick="openRoomModal()">+ Add New Room</button>
+        </div>
+        <table>
+          <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Amenities</th><th>Actions</th></tr></thead>
+          <tbody id="room-table">
+            <tr><td colspan="5" style="text-align:center;">No rooms found.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="panel-feedback" class="panel hidden">
+        <h2>Client Feedback</h2>
+        <table>
+          <thead><tr><th>Guest</th><th>Rating</th><th>Message</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="feedback-table">
+            <tr><td colspan="5" style="text-align:center;">No feedback found.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="panel-gallery" class="panel hidden">
+        <h2>Gallery Settings</h2>
+        <div style="border:1px solid #eee; padding:20px; border-radius:8px;">
+            <h4>Hero Background Image</h4>
+            <img id="bg-preview" style="max-width:300px; height:auto; margin-bottom:15px; border:1px solid #ccc; display:block;" src="https://via.placeholder.com/300x150?text=Hero+Background" alt="Hero Preview">
+            <input type="file" id="bg-upload" accept="image/*">
+            <button class="btn btn-block btn-small" style="width:200px; margin-top:15px;" onclick="saveBackground()">Save Background</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="booking-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('booking-modal')">&times;</button>
+      <h3>Booking Details</h3>
+      <div id="bd-content"></div>
+      <hr style="margin:20px 0;">
+      <div style="display:flex; justify-content:space-around;">
+        <button id="btn-approve" class="btn" style="background:#2ecc71; color:#fff;">Approve</button>
+        <button id="btn-decline" class="btn btn-danger">Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="room-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('room-modal')">&times;</button>
+      <h3 id="room-modal-title">Add Room</h3>
+      <form id="room-form">
+        <input type="hidden" id="edit-room-id">
+        <label>Room Name</label><input type="text" id="r-name" required />
+        <label>Price (₱)</label><input type="number" id="r-price" required />
+        <label>Description</label><textarea id="r-desc" rows="2"></textarea>
+        <label>Amenities (Comma-separated)</label><input type="text" id="r-amenities" placeholder="AC, Wifi, Kitchen" />
+        <label>Room Photo</label>
+        <input type="file" id="r-photo" accept="image/*" />
+        <img id="r-preview" style="max-width:100px; height:auto; margin-top:10px; display:none;" alt="Room Preview">
+        <button type="submit" class="btn btn-block" style="margin-top:20px;">Save Room</button>
+      </form>
+    </div>
+  </div>
+
+<script src="admin.js"></script>
+</body>
+</html>

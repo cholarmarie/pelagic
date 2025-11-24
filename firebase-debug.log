@@ -1,0 +1,39 @@
+[debug] [2025-11-23T13:14:23.602Z] ----------------------------------------------------------------------
+[debug] [2025-11-23T13:14:23.622Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Swarra\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2025-11-23T13:14:23.623Z] CLI Version:   14.26.0
+[debug] [2025-11-23T13:14:23.623Z] Platform:      win32
+[debug] [2025-11-23T13:14:23.623Z] Node Version:  v24.11.1
+[debug] [2025-11-23T13:14:23.623Z] Time:          Sun Nov 23 2025 21:14:23 GMT+0800 (Philippine Standard Time)
+[debug] [2025-11-23T13:14:23.624Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-11-23T13:14:24.180Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-11-23T13:14:24.181Z] > authorizing via signed-in user (sgfmendoza21@gmail.com)
+[debug] [2025-11-23T13:14:24.181Z] [iam] checking project pelagics-33950 for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2025-11-23T13:14:24.183Z] Checked if tokens are valid: false, expires at: 1763863659413
+[debug] [2025-11-23T13:14:24.183Z] Checked if tokens are valid: false, expires at: 1763863659413
+[debug] [2025-11-23T13:14:24.184Z] > refreshing access token with scopes: []
+[debug] [2025-11-23T13:14:24.190Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-11-23T13:14:24.191Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-23T13:14:24.471Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-11-23T13:14:24.471Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-11-23T13:14:24.482Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/pelagics-33950:testIamPermissions [none]
+[debug] [2025-11-23T13:14:24.482Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/pelagics-33950:testIamPermissions x-goog-quota-user=projects/pelagics-33950
+[debug] [2025-11-23T13:14:24.482Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/pelagics-33950:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-11-23T13:14:25.543Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/pelagics-33950:testIamPermissions 200
+[debug] [2025-11-23T13:14:25.543Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/pelagics-33950:testIamPermissions {}
+[debug] [2025-11-23T13:14:25.544Z] [iam] error while checking permissions, command may fail: Authorization failed. This account is missing the following required permissions on project pelagics-33950:
+
+  firebase.projects.get
+  firebasehosting.sites.update
+[debug] [2025-11-23T13:14:25.545Z] Checked if tokens are valid: true, expires at: 1763907263471
+[debug] [2025-11-23T13:14:25.545Z] Checked if tokens are valid: true, expires at: 1763907263471
+[debug] [2025-11-23T13:14:25.545Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/pelagics-33950 [none]
+[debug] [2025-11-23T13:14:25.839Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/pelagics-33950 403
+[debug] [2025-11-23T13:14:25.840Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/pelagics-33950 {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2025-11-23T13:14:25.840Z] Request to https://firebase.googleapis.com/v1beta1/projects/pelagics-33950 had HTTP Error: 403, The caller does not have permission
+[debug] [2025-11-23T13:14:25.924Z] FirebaseError: Request to https://firebase.googleapis.com/v1beta1/projects/pelagics-33950 had HTTP Error: 403, The caller does not have permission
+    at responseToError (C:\Users\Swarra\AppData\Roaming\npm\node_modules\firebase-tools\lib\responseToError.js:53:12)
+    at RetryOperation._fn (C:\Users\Swarra\AppData\Roaming\npm\node_modules\firebase-tools\lib\apiv2.js:322:77)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+[error] 
+[error] Error: Failed to get Firebase project pelagics-33950. Please make sure the project exists and your account has permission to access it.
