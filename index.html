@@ -60,7 +60,17 @@
     .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;padding-bottom:20px;}
   </style>
   
-  </head>
+  <script>
+    const rooms = [
+        // This is placeholder data that matches the old structure
+        { id: 'R1', name: 'Room 1 (Overnight)', price: 3500, type: 'overnight', image: 'Pelagic (1).jpg', desc: 'Standard room for 2 pax, AC, with private bath.' },
+        { id: 'V1', name: 'Villa 1 (Overnight)', price: 5000, type: 'overnight', image: 'image (8).png', desc: 'Private villa for 4 pax, with kitchen and balcony.' },
+        { id: 'FC', name: 'Family Cottage (Daytour)', price: 1500, type: 'daytour', image: 'image (4).png', desc: 'Open cottage near the beach, capacity 10 pax.' },
+        { id: 'GC', name: 'Gray Cottage (Daytour)', price: 1200, type: 'daytour', image: 'image (5).png', desc: 'Smaller cottage, capacity 6 pax, near pool area.' },
+    ];
+    window.rooms = rooms; 
+  </script>
+</head>
 <body>
 
   <header>
@@ -132,57 +142,38 @@
   </footer>
 
   <script>
-    // ⭐️ NEW SCRIPT TO FETCH ROOMS FROM NETLIFY FUNCTION / MONGODB ⭐️
-    async function renderIndexRooms() {
-        const list = document.getElementById('rooms-list');
-        // Initial loading message
-        list.innerHTML = '<p style="text-align:center; padding:20px; grid-column:1/-1;">Loading rooms from the cloud...</p>'; 
-
-        try {
-            // Call the Netlify Function API endpoint
-            const response = await fetch('/.netlify/functions/get-rooms');
-            
-            if (!response.ok) {
-                 // Throw an error if the status code is not 200
-                 throw new Error(`Failed to fetch rooms: ${response.statusText}`);
-            }
-
-            const rooms = await response.json();
-            
-            if (rooms.length === 0) {
-                list.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding:20px;">No rooms currently available in the database.</p>';
-                return;
-            }
-
-            const placeholder = "https://via.placeholder.com/400x250?text=Room+Photo";
-
-            // Map the fetched rooms to HTML cards
-            list.innerHTML = rooms.map(r => `
-                <div class="room-card">
-                    <img src="${r.image && r.image.length > 100 ? r.image : placeholder}" alt="${r.name}">
-                    <div class="card-body">
-                        <h3>${r.name}</h3>
-                        <p class="room-desc">${r.desc}</p>
-                        <div class="room-amenities">${r.amenities ? r.amenities.split(',').map(a => `<span>${a.trim()}</span>`).join('') : ''}</div>
-                        <div class="price-info">
-                            <span class="price">₱ ${Number(r.price).toLocaleString()}</span> / ${r.type === 'overnight' ? 'Night' : 'Day'}
-                        </div>
-                        <a href="profile.html?room=${r._id}" class="btn book-btn small-btn" style="float:right;">Book This Room</a>
-                    </div>
-                </div>
-            `).join('');
-
-        } catch (error) {
-            console.error("Error loading rooms:", error);
-            list.innerHTML = `<p style="text-align:center; color:red; grid-column:1/-1; padding:20px;">Error loading rooms: ${error.message}. Please ensure your MONGO_URI is set correctly on Netlify and your 'get-rooms.js' function is correct.</p>`;
-        }
-    }
-
-    // Call the new async function when the page loads
+    // SCRIPT REVERTED: Now uses window.rooms array again
     document.addEventListener('DOMContentLoaded', () => {
-        if (document.getElementById('rooms-list')) {
-            renderIndexRooms();
+        const roomsList = document.getElementById('rooms-list');
+        // Retrieve rooms from the global variable defined earlier
+        const roomsData = window.rooms || []; 
+        const placeholder = "https://via.placeholder.com/400x250?text=Room+Photo";
+
+
+        if (roomsData.length === 0) {
+             roomsList.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding:20px;">Error: Room data is missing from the local script block.</p>';
+             return;
         }
+
+        roomsData.forEach(room => {
+            const card = document.createElement('article');
+            card.className = 'card room-card';
+            
+            const baseImage = room.image;
+            
+            card.innerHTML = `
+                <img src="${baseImage.length > 100 ? baseImage : placeholder}" alt="${room.name}">
+                <div class="card-body">
+                    <h3>${room.name}</h3>
+                    <p class="room-desc">${room.desc}</p>
+                    <div class="price-info">
+                        <span class="price">₱ ${room.price.toLocaleString()}</span> / ${room.type === 'overnight' ? 'Night' : 'Day'}
+                    </div>
+                    <a href="profile.html?room=${room.id}" class="btn book-btn small-btn" style="float:right;">Book This Room</a>
+                </div>
+            `;
+            roomsList.appendChild(card);
+        });
     });
   </script>
 </body>
