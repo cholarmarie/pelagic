@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Dashboard - Pelagic Beach Resort</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
+  
   <style>
     /* ⭐ Minimalist Admin Styles ⭐ */
     :root{
@@ -19,7 +19,7 @@
     /* Auth Styles */
     .auth-container { display:flex; align-items:center; justify-content:center; min-height:100vh; }
     .auth-card { background:#fff; padding:28px; border-radius:8px; width:360px; box-shadow:var(--shadow); }
-
+    
     /* Global Elements */
     input, select, textarea { width:100%; padding:10px; border:1px solid #ccc; border-radius:6px; margin-bottom:15px; }
     label { font-weight: 600; font-size: 0.9rem; display: block; margin-bottom: 5px; }
@@ -156,7 +156,57 @@
     </div>
   </div>
 
+  <!-- EmailJS SDK -->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<script>
+// ───────────────────────────────
+// EMAILJS INITIALIZATION + EMAIL SENDER ONLY
+// Put this in your main HTML file
+// ───────────────────────────────
+(function () {
+    emailjs.init("IMC2er6Dj3JF3iEYF"); // ← Replace with your real Public Key
+})();
+
+// Global function used by your main JS file
+window.sendBookingEmail = function (booking, status) {
+    if (!booking.email || booking.email.trim() === '') {
+        alert(`No email address found. Booking ${status === 'approved' ? 'approved' : 'declined'}, but email not sent.`);
+        return;
+    }
+
+    const isApproved = status === 'approved';
+
+    const templateParams = {
+        guestName: booking.guestName || "Valued Guest",
+        email     : booking.email,
+        roomName  : booking.roomName,
+        gcash     : booking.gcash || "Not provided",
+        checkIn   : new Date(booking.in).toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        }),
+        checkOut  : new Date(booking.out).toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        }),
+    };
+
+    // Your real IDs
+    const serviceID  = "service_ik3h0lo";
+    const templateID = isApproved 
+        ? "template_wdm2ezx"                  // Approved template
+        : "template_wdm2ezx";                 // Change this later if you make a decline-only template
+
+    emailjs.send(serviceID, templateID, templateParams)
+        .then(() => {
+            alert(`Booking ${isApproved ? 'APPROVED' : 'DECLINED'} and email sent to ${booking.email}`);
+        })
+        .catch((err) => {
+            console.error("EmailJS Error:", err);
+            alert(`Booking ${isApproved ? 'approved' : 'declined'}, but email failed to send.`);
+        });
+};
+</script>
+
 <script src="admin.js"></script>
 </body>
-</html>
 </html>
