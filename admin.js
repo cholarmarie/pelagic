@@ -1,224 +1,213 @@
-// --- ADMIN.JS CORE LOGIC ---
+/**
+ * ADMIN SIDE LOGIC
+ * Handles Room CRUD, Booking Approval, Gallery, Feedback
+ */
 
-// Utility function to switch dashboard panels
-window.switchTab = function(tabName) {
-    // 1. Hide all panels and remove active class from all buttons
-    document.querySelectorAll('.panel').forEach(panel => panel.classList.add('hidden'));
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+const DB = {
+    get: (key) => JSON.parse(localStorage.getItem(key)) || [],
+    set: (key, val) => localStorage.setItem(key, JSON.stringify(val)),
+    getObj: (key) => JSON.parse(localStorage.getItem(key)) || {},
+};
 
-    // 2. Show the selected panel and set the button active
-    document.getElementById(`panel-${tabName}`).classList.remove('hidden');
-    document.querySelector(`.tab-btn[onclick="switchTab('${tabName}')"]`).classList.add('active');
-
-    // 3. Render tables for the active tab (important for gallery)
-    if (tabName === 'gallery') {
-        renderGalleryTable();
-    }
-    // You'd add calls here for other tables like renderBookingTable(), renderRoomTable(), etc.
-}
-
-// Utility function to close a modal
-window.closeModal = function(modalId) {
-    document.getElementById(modalId).classList.add('hidden');
-    // Reset forms on close
-    if (modalId === 'gallery-modal') {
-        document.getElementById('gallery-form').reset();
-        document.getElementById('g-preview').style.display = 'none';
-    }
-    // You would add resets for other modals here
-}
-
-// --- GALLERY MANAGEMENT FUNCTIONS ---
-
-// Initializes the gallery photos from localStorage, or an empty array if none exist.
-let galleryPhotos = JSON.parse(localStorage.getItem('galleryPhotos')) || [
-    // Pre-populate with some sample data using placeholders (Base64 data is heavy, so we use placeholders)
-    { id: 101, url: 'https://via.placeholder.com/80x50?text=Beach', caption: 'The beautiful beachfront', date: '2025-01-10' },
-    { id: 102, url: 'https://via.placeholder.com/80x50?text=Room', caption: 'Luxury Suite Interior', date: '2025-02-15' }
-];
-
-// Saves the current galleryPhotos array back to localStorage.
-function saveGalleryPhotos() {
-    localStorage.setItem('galleryPhotos', JSON.stringify(galleryPhotos));
-    renderGalleryTable();
-}
-
-// Renders the list of photos in the admin table.
-function renderGalleryTable() {
-    const tableBody = document.getElementById('gallery-table');
-    tableBody.innerHTML = ''; // Clear previous rows
-
-    if (galleryPhotos.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No gallery photos found.</td></tr>';
-        return;
-    }
-
-    galleryPhotos.forEach(photo => {
-        const row = tableBody.insertRow();
-        row.innerHTML = `
-            <td>${photo.id}</td>
-            <td><img src="${photo.url}" alt="${photo.caption}" class="gallery-img-thumb"></td>
-            <td>${photo.caption}</td>
-            <td>${photo.date}</td>
-            <td>
-                <button class="btn btn-small" onclick="editGalleryPhoto(${photo.id})">Edit</button>
-                <button class="btn btn-small btn-danger" onclick="deleteGalleryPhoto(${photo.id})">Delete</button>
-            </td>
-        `;
-    });
-}
-
-// Function to open the Add/Edit Modal
-window.openGalleryModal = function(photoId = null) {
-    document.getElementById('gallery-modal').classList.remove('hidden');
-    const title = document.getElementById('gallery-modal-title');
-    const idField = document.getElementById('edit-gallery-id');
-    const captionField = document.getElementById('g-caption');
-    const photoField = document.getElementById('g-photo');
-    const preview = document.getElementById('g-preview');
-    
-    // Reset modal fields first
-    document.getElementById('gallery-form').reset();
-    preview.style.display = 'none';
-    photoField.setAttribute('required', 'required');
-
-    if (photoId) {
-        const photo = galleryPhotos.find(p => p.id === photoId);
-        if (photo) {
-            title.textContent = 'Edit Photo';
-            idField.value = photoId;
-            captionField.value = photo.caption;
-            photoField.removeAttribute('required'); // Don't require file upload on edit
-            preview.src = photo.url;
-            preview.style.display = 'block';
-        }
-    } else {
-        title.textContent = 'Add Gallery Photo';
-        idField.value = '';
-    }
-}
-
-// Alias for edit button
-window.editGalleryPhoto = function(id) {
-    openGalleryModal(id);
-}
-
-// Function to delete a photo
-window.deleteGalleryPhoto = function(id) {
-    if (confirm('Are you sure you want to delete this photo? This cannot be undone.')) {
-        // Filter out the photo with the matching ID
-        galleryPhotos = galleryPhotos.filter(p => p.id !== id);
-        saveGalleryPhotos();
-        alert('Photo deleted.');
-    }
-}
-
-// Handles file input change for showing the preview image
-document.getElementById('g-photo').addEventListener('change', function(event) {
-    const preview = document.getElementById('g-preview');
-    if (event.target.files && event.target.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.src = e.target.result;
-            preview.style.display = 'block';
-        };
-        reader.readAsDataURL(event.target.files[0]); // Read file as Data URL (Base64)
-    } else {
-        preview.style.display = 'none';
-        preview.src = '';
-    }
+const toBase64 = file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
 });
 
-
-// Form submission handler for saving/editing photos
-document.getElementById('gallery-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const id = document.getElementById('edit-gallery-id').value;
-    const caption = document.getElementById('g-caption').value;
-    const photoFile = document.getElementById('g-photo').files[0];
-    
-    // Use the FileReader to handle the file asynchronously
-    const handleSave = (url) => {
-        if (id) {
-            // EDIT: Update existing photo
-            const index = galleryPhotos.findIndex(p => p.id === parseInt(id));
-            if (index !== -1) {
-                galleryPhotos[index].caption = caption;
-                if (url) {
-                    galleryPhotos[index].url = url; // Update URL only if a new file was uploaded
-                }
-            }
-        } else {
-            // ADD: Create new photo
-            const newPhoto = {
-                id: Date.now(), // Unique ID
-                url: url,
-                caption: caption,
-                date: new Date().toLocaleDateString('en-US'),
-            };
-            galleryPhotos.unshift(newPhoto);
-        }
-        saveGalleryPhotos();
-        closeModal('gallery-modal');
-    };
-
-    if (photoFile) {
-        // If a new file is uploaded (or adding a new photo)
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            handleSave(e.target.result);
-        };
-        reader.readAsDataURL(photoFile);
-    } else if (id) {
-        // If editing but no new file is uploaded (only changing caption)
-        handleSave(null);
-    } else {
-        // Should not happen if 'required' attribute is set correctly on add
-        alert('Please select a photo to upload.');
-    }
-});
-
-
-// --- ADMIN LOGIN SIMULATION (Keep this logic if it exists) ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Check for a simulated logged-in admin
-    const isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn') === 'true';
-    if (isAdminLoggedIn) {
-        document.getElementById('admin-login').classList.add('hidden');
-        document.getElementById('admin-dashboard').classList.remove('hidden');
-    }
-
-    // Admin Login Form
-    document.getElementById('admin-login-form')?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('admin-email').value;
-        const password = document.getElementById('admin-pass').value;
-
-        // Simple hardcoded admin check
-        if (email === 'admin@pelagic.com' && password === 'admin123') {
-            localStorage.setItem('isAdminLoggedIn', 'true');
-            window.location.reload(); // Reloads to show dashboard
-        } else {
-            alert('Invalid Admin Credentials');
-        }
-    });
-
-    // Admin Logout Button
-    document.getElementById('admin-logout')?.addEventListener('click', () => {
-        localStorage.removeItem('isAdminLoggedIn');
-        window.location.reload();
-    });
-
-    // Initial render for the Gallery table (in case the Gallery tab is the default)
-    renderGalleryTable();
+    // Check if admin is already logged in on page load
+    if(sessionStorage.getItem('pelagic_admin')) showDashboard();
 });
 
-// Add these to ensure the modals and utility functions are globally available
-window.openRoomModal = function() {
-    document.getElementById('room-modal').classList.remove('hidden');
-    // Add logic here to load room data for editing
+// FIX: Updated element IDs to 'admin-email' and 'admin-pass'
+document.getElementById('admin-login-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('admin-email').value;
+    const pass = document.getElementById('admin-pass').value;
+
+    if(email === 'admin@pelagic.com' && pass === 'superadmin123') {
+        sessionStorage.setItem('pelagic_admin', 'true');
+        showDashboard();
+    } else {
+        alert('Invalid Admin Credentials');
+    }
+});
+
+document.getElementById('admin-logout')?.addEventListener('click', () => {
+    sessionStorage.removeItem('pelagic_admin');
+    window.location.reload();
+});
+
+function showDashboard() {
+    document.getElementById('admin-login').classList.add('hidden');
+    document.getElementById('admin-dashboard').classList.remove('hidden');
+    loadBookings(); loadRooms(); loadFeedback(); loadGallery();
 }
-window.saveBackground = function() {
-    alert('Saving background image is simulated. In a real app, this would upload the file.');
+
+window.switchTab = function(tabName) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('panel-'+tabName).classList.remove('hidden');
+    
+};
+
+// --- 1. ROOM MANAGEMENT ---
+
+window.openRoomModal = function(id = null) {
+    const modal = document.getElementById('room-modal');
+    const form = document.getElementById('room-form');
+    form.reset();
+    document.getElementById('r-preview').style.display = 'none';
+    if (id) {
+        const r = DB.get('pelagic_rooms').find(room => room.id === id);
+        document.getElementById('edit-room-id').value = r.id;
+        document.getElementById('r-name').value = r.name;
+        document.getElementById('r-price').value = r.price;
+        document.getElementById('r-desc').value = r.desc;
+        document.getElementById('r-amenities').value = r.amenities;
+        document.getElementById('room-modal-title').innerText = "Edit Room";
+        if(r.image) {
+            document.getElementById('r-preview').src = r.image;
+            document.getElementById('r-preview').style.display = 'block';
+        }
+    } else {
+        document.getElementById('edit-room-id').value = '';
+        document.getElementById('room-modal-title').innerText = "Add Room";
+    }
+    modal.classList.remove('hidden');
+};
+
+document.getElementById('room-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('edit-room-id').value;
+    const file = document.getElementById('r-photo').files[0];
+    let rooms = DB.get('pelagic_rooms');
+    let imageBase64 = "";
+    if (id) {
+        const idx = rooms.findIndex(r => r.id === id);
+        imageBase64 = rooms[idx].image;
+        if (file) imageBase64 = await toBase64(file);
+        rooms[idx] = { id, name: document.getElementById('r-name').value, price: document.getElementById('r-price').value, desc: document.getElementById('r-desc').value, amenities: document.getElementById('r-amenities').value, image: imageBase64 };
+    } else {
+        if (file) imageBase64 = await toBase64(file);
+        rooms.push({ id: 'RM' + Date.now(), name: document.getElementById('r-name').value, price: document.getElementById('r-price').value, desc: document.getElementById('r-desc').value, amenities: document.getElementById('r-amenities').value, image: imageBase64 });
+    }
+    DB.set('pelagic_rooms', rooms);
+    closeModal('room-modal');
+    loadRooms();
+});
+
+function loadRooms() {
+    document.getElementById('room-table').innerHTML = DB.get('pelagic_rooms').map(r => `
+        <tr><td><img src="${r.image || ''}" style="width:50px; height:50px; object-fit:cover;"></td><td>${r.name}</td><td>₱${r.price}</td><td>${r.amenities}</td><td><button onclick="openRoomModal('${r.id}')" class="btn btn-small" style="background:#f39c12;">Edit</button> <button onclick="deleteRoom('${r.id}')" class="btn btn-small btn-danger">Delete</button></td></tr>
+    `).join('');
 }
+
+window.deleteRoom = function(id) {
+    if(confirm('Delete this room?')) {
+        DB.set('pelagic_rooms', DB.get('pelagic_rooms').filter(r => r.id !== id));
+        loadRooms();
+    }
+};
+
+// --- 2. BOOKING MANAGEMENT ---
+
+function loadBookings() {
+    document.getElementById('booking-table').innerHTML = DB.get('pelagic_bookings').map(b => `
+        <tr>
+            <td>${b.id}</td>
+            <td>${b.guestName}</td>
+            <td>${b.roomName}</td>
+            <td>${b.total}</td>
+            <td style="font-weight:bold;text-transform:uppercase;color:${b.status==='approved'?'green':b.status==='declined'?'red':'orange'}">${b.status}</td>
+            <td>
+                <button onclick="viewBooking('${b.id}')" class="btn btn-small">View</button>
+                <button onclick="deleteBooking('${b.id}')" class="btn btn-small btn-danger" style="margin-left:5px;">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+window.deleteBooking = function(id) {
+    if(confirm('Are you sure you want to permanently delete this booking record?')) {
+        let bookings = DB.get('pelagic_bookings');
+        bookings = bookings.filter(b => b.id !== id);
+        DB.set('pelagic_bookings', bookings);
+        loadBookings();
+    }
+};
+
+// ───────────────────────────────
+// Only modal + status update logic (no EmailJS code here)
+// ───────────────────────────────
+
+window.viewBooking = function (id) {
+    const b = DB.get('pelagic_bookings').find(item => item.id === id);
+    if (!b) return;
+
+    document.getElementById('bd-content').innerHTML = `
+        <p><strong>Guest:</strong> ${b.guestName}</p>
+        <p><strong>Email:</strong> ${b.email ? b.email : '<i style="color:#e74c3c">No email</i>'}</p>
+        <p><strong>Room:</strong> ${b.roomName}</p>
+        <p><strong>Dates:</strong> ${new Date(b.in).toLocaleDateString()} – ${new Date(b.out).toLocaleDateString()}</p>
+        <p><strong>GCash:</strong> ${b.gcash}</p>
+        <p><strong>Receipt:</strong></p>
+        <img src="${b.receipt}" class="receipt-img" style="max-width:100%; border-radius:8px; margin-top:8px;">
+    `;
+
+    document.getElementById('btn-approve').onclick = () => updateStatus(id, 'approved', b);
+    document.getElementById('btn-decline').onclick = () => updateStatus(id, 'declined', b);
+
+    document.getElementById('booking-modal').classList.remove('hidden');
+};
+
+function updateStatus(id, status, booking) {
+    if (status === 'declined' && !confirm('Are you sure you want to decline this booking?')) return;
+
+    // Update DB
+    let bookings = DB.get('pelagic_bookings');
+    const idx = bookings.findIndex(b => b.id === id);
+    bookings[idx].status = status;
+    DB.set('pelagic_bookings', bookings);
+
+    // Send email using the global function defined in HTML
+    if (typeof sendBookingEmail === 'function') {
+        sendBookingEmail(booking, status);
+    }
+
+    // Refresh UI
+    closeModal('booking-modal');
+    loadBookings();
+}
+
+// --- 3. FEEDBACK ---
+function loadFeedback() {
+    document.getElementById('feedback-table').innerHTML = DB.get('pelagic_feedbacks').map((f, i) => `<tr><td>${f.guestName}</td><td>${f.rating}/5</td><td>${f.msg}</td><td>${f.date}</td><td><button onclick="deleteFeedback(${i})" class="btn btn-small btn-danger">Delete</button></td></tr>`).join('');
+}
+
+window.deleteFeedback = function(i) {
+    let fb = DB.get('pelagic_feedbacks');
+    fb.splice(i, 1);
+    DB.set('pelagic_feedbacks', fb);
+    loadFeedback();
+};
+
+// --- 4. GALLERY ---
+function loadGallery() {
+    const g = DB.getObj('pelagic_gallery');
+    if(g.bg) document.getElementById('bg-preview').src = g.bg;
+}
+
+window.saveBackground = async function() {
+    const file = document.getElementById('bg-upload').files[0];
+    if(!file) return alert('Please choose a file');
+    const b64 = await toBase64(file);
+    DB.set('pelagic_gallery', { bg: b64 });
+    document.getElementById('bg-preview').src = b64;
+    alert('Background Updated!');
+};
+
+window.closeModal = function(id) { document.getElementById(id).classList.add('hidden'); };
