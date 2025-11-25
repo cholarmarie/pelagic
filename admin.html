@@ -42,6 +42,8 @@
     th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; }
     th { background: #f7f9fa; font-weight: 700; color: #555; }
     tr:last-child td { border-bottom: none; }
+    /* Gallery Specific Styles */
+    .gallery-img-thumb { width: 80px; height: 50px; object-fit: cover; border-radius: 4px; }
 
     /* Modal Styles */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; }
@@ -115,12 +117,25 @@
 
       <div id="panel-gallery" class="panel hidden">
         <h2>Gallery Settings</h2>
-        <div style="border:1px solid #eee; padding:20px; border-radius:8px;">
+        
+        <div style="border:1px solid #eee; padding:20px; border-radius:8px; margin-bottom: 20px;">
             <h4>Hero Background Image</h4>
             <img id="bg-preview" style="max-width:300px; height:auto; margin-bottom:15px; border:1px solid #ccc; display:block;" src="https://via.placeholder.com/300x150?text=Hero+Background" alt="Hero Preview">
             <input type="file" id="bg-upload" accept="image/*">
             <button class="btn btn-block btn-small" style="width:200px; margin-top:15px;" onclick="saveBackground()">Save Background</button>
         </div>
+        
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3>Photo Gallery Management</h3>
+            <button class="btn btn-block btn-small" style="width:auto;" onclick="openGalleryModal()">+ Add New Photo</button>
+        </div>
+        <table>
+          <thead><tr><th>ID</th><th>Photo</th><th>Caption</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody id="gallery-table">
+            <tr><td colspan="5" style="text-align:center;">No gallery photos found.</td></tr>
+          </tbody>
+        </table>
+
       </div>
     </div>
   </div>
@@ -156,8 +171,21 @@
     </div>
   </div>
 
-  <!-- EmailJS SDK -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <div class="modal-overlay hidden" id="gallery-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('gallery-modal')">&times;</button>
+      <h3 id="gallery-modal-title">Add Gallery Photo</h3>
+      <form id="gallery-form">
+        <input type="hidden" id="edit-gallery-id">
+        <label>Photo Caption (Optional)</label><input type="text" id="g-caption" placeholder="View from the balcony" />
+        <label>Upload Photo</label>
+        <input type="file" id="g-photo" accept="image/*" required />
+        <img id="g-preview" class="gallery-img-thumb" style="width:100%; max-width:200px; height:auto; margin-top:10px; display:none;" alt="Photo Preview">
+        <button type="submit" class="btn btn-block" style="margin-top:20px;">Save Photo</button>
+      </form>
+    </div>
+  </div>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <script>
 // ───────────────────────────────
