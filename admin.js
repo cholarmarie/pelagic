@@ -140,20 +140,45 @@ window.deleteBooking = function(id) {
     }
 };
 
-window.viewBooking = function(id) {
+// ───────────────────────────────
+// Only modal + status update logic (no EmailJS code here)
+// ───────────────────────────────
+
+window.viewBooking = function (id) {
     const b = DB.get('pelagic_bookings').find(item => item.id === id);
-    if(!b) return;
-    document.getElementById('bd-content').innerHTML = `<p><strong>Guest:</strong> ${b.guestName}</p><p><strong>Room:</strong> ${b.roomName}</p><p><strong>Dates:</strong> ${new Date(b.in).toLocaleString()} to ${new Date(b.out).toLocaleString()}</p><p><strong>GCash:</strong> ${b.gcash}</p><p><strong>Receipt:</strong></p><img src="${b.receipt}" class="receipt-img">`;
-    document.getElementById('btn-approve').onclick = () => updateStatus(id, 'approved');
-    document.getElementById('btn-decline').onclick = () => updateStatus(id, 'declined');
+    if (!b) return;
+
+    document.getElementById('bd-content').innerHTML = `
+        <p><strong>Guest:</strong> ${b.guestName}</p>
+        <p><strong>Email:</strong> ${b.email ? b.email : '<i style="color:#e74c3c">No email</i>'}</p>
+        <p><strong>Room:</strong> ${b.roomName}</p>
+        <p><strong>Dates:</strong> ${new Date(b.in).toLocaleDateString()} – ${new Date(b.out).toLocaleDateString()}</p>
+        <p><strong>GCash:</strong> ${b.gcash}</p>
+        <p><strong>Receipt:</strong></p>
+        <img src="${b.receipt}" class="receipt-img" style="max-width:100%; border-radius:8px; margin-top:8px;">
+    `;
+
+    document.getElementById('btn-approve').onclick = () => updateStatus(id, 'approved', b);
+    document.getElementById('btn-decline').onclick = () => updateStatus(id, 'declined', b);
+
     document.getElementById('booking-modal').classList.remove('hidden');
 };
 
-function updateStatus(id, status) {
-    if(status === 'declined' && !confirm('Are you sure you want to decline this booking?')) return;
+function updateStatus(id, status, booking) {
+    if (status === 'declined' && !confirm('Are you sure you want to decline this booking?')) return;
+
+    // Update DB
     let bookings = DB.get('pelagic_bookings');
-    bookings[bookings.findIndex(b => b.id === id)].status = status;
+    const idx = bookings.findIndex(b => b.id === id);
+    bookings[idx].status = status;
     DB.set('pelagic_bookings', bookings);
+
+    // Send email using the global function defined in HTML
+    if (typeof sendBookingEmail === 'function') {
+        sendBookingEmail(booking, status);
+    }
+
+    // Refresh UI
     closeModal('booking-modal');
     loadBookings();
 }
