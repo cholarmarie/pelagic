@@ -36,13 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setupTabs();
         setupDateRestrictions();
     }
-    
-    // Setup listener for the new homepage Logout button (error-free check)
-    document.getElementById('nav-logout-btn')?.addEventListener('click', () => {
-        sessionStorage.removeItem('pelagic_user');
-        // Redirect to homepage to refresh state
-        window.location.href = 'index.html'; 
-    });
 });
 
 // --- 4. UI & NAVIGATION LOGIC ---
@@ -51,20 +44,15 @@ function updateNavState() {
     const user = sessionStorage.getItem('pelagic_user');
     const loginBtn = document.getElementById('nav-login-btn');
     const bookBtn = document.getElementById('nav-book-btn');
-    const logoutBtn = document.getElementById('nav-logout-btn'); 
 
     if (user) {
-        // Logged In: Hide Login, Show Logout, Change Book Button text
         if (loginBtn) loginBtn.style.display = 'none';
-        if (logoutBtn) logoutBtn.style.display = 'inline-block';
         if (bookBtn) {
             bookBtn.textContent = "My Dashboard";
             bookBtn.href = "profile.html";
         }
     } else {
-        // Logged Out: Show Login, Hide Logout, Reset Book Button text
         if (loginBtn) loginBtn.style.display = 'inline-block';
-        if (logoutBtn) logoutBtn.style.display = 'none';
         if (bookBtn) bookBtn.textContent = "Book Now";
     }
 }
@@ -117,7 +105,7 @@ function checkAuthState() {
         
         loadBookingOptions(); 
         loadMyBookings(uObj.email);
-        renderUserFeedbacks(); 
+        renderUserFeedbacks(); // Load feedbacks on login
 
         const urlParams = new URLSearchParams(window.location.search);
         const roomID = urlParams.get('room');
@@ -126,11 +114,8 @@ function checkAuthState() {
             setTimeout(() => { select.value = roomID; select.dispatchEvent(new Event('change')); }, 100);
         }
     } else {
-        // FIX: Ensures the dashboard is hidden and only the login/register forms are visible.
         document.getElementById('auth-section').classList.remove('hidden');
         document.getElementById('dashboard-section').classList.add('hidden');
-        document.getElementById('login-form').classList.remove('hidden');
-        document.getElementById('register-form').classList.add('hidden');
     }
 }
 
@@ -177,7 +162,6 @@ document.getElementById('register-form-data')?.addEventListener('submit', (e) =>
     document.getElementById('show-login').click();
 });
 
-// This logout button is on profile.html, handled safely with optional chaining.
 document.getElementById('logout-btn')?.addEventListener('click', () => {
     sessionStorage.removeItem('pelagic_user');
     window.location.href = 'index.html'; 
